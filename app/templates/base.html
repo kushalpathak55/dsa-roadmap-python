@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}DSA Roadmap{% endblock %}</title>
+
+  <meta name="theme-color" content="#2a78d6">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="DSA Roadmap">
+  <link rel="manifest" href="{{ url_for('static', path='manifest.json') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', path='icons/apple-touch-icon.png') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', path='icons/favicon.png') }}">
+
+  <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body{% if topic is defined and topic.is_content_only %} data-content-only-slug="{{ topic.slug }}"{% endif %}>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <div class="cmdk-overlay" id="cmdk-overlay" hidden>
+    <div class="cmdk-dialog" role="dialog" aria-modal="true" aria-label="Quick jump">
+      <input id="cmdk-input" type="text" class="cmdk-input" placeholder="Jump to a topic..." autocomplete="off" spellcheck="false"
+             role="combobox" aria-expanded="true" aria-controls="cmdk-results" aria-autocomplete="list" aria-label="Jump to a topic">
+      <ul id="cmdk-results" class="cmdk-results" role="listbox" aria-label="Matching topics"></ul>
+      <div class="cmdk-empty" id="cmdk-empty" hidden role="status">No topics match.</div>
+    </div>
+  </div>
+  <div class="layout">
+    <nav class="sidebar" aria-label="Roadmap">
+      <a class="brand" href="/">DSA Roadmap</a>
+      <button type="button" id="cmdk-trigger" class="cmdk-trigger" aria-haspopup="dialog">
+        <span>jump to...</span>
+        <span class="cmdk-trigger-key">Ctrl K</span>
+      </button>
+      <div class="progress-summary" id="progress-summary" role="status"></div>
+      {% for category in nav_categories %}
+        <div class="nav-category" style="--cat: var(--cat-{{ category.slot }});">
+          <div class="nav-category-name"><span class="nav-category-emoji" aria-hidden="true">{{ category.emoji }}</span> {{ category.name }}</div>
+          <ul class="nav-topics">
+            {% for topic in category.topics %}
+              <li>
+                <a href="/topic/{{ topic.slug }}" data-progress-slug="{{ topic.slug }}"
+                   class="nav-topic {% if topic.slug == current_slug %}active{% endif %} {% if topic.is_coming_soon %}coming-soon{% endif %}"
+                   {% if topic.slug == current_slug %}aria-current="page"{% endif %}>
+                  {{ topic.title }}
+                  <span class="sr-only progress-complete-label" hidden> - completed</span>
+                  {% if topic.is_coming_soon %}<span class="badge">soon</span>{% endif %}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
+      <button id="progress-reset" type="button" class="progress-reset" hidden>reset progress</button>
+    </nav>
+    <main class="content" id="main-content" tabindex="-1">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  <script src="{{ url_for('static', path='js/core/progress.js') }}"></script>
+  <script src="{{ url_for('static', path='js/core/command_palette.js') }}"></script>
+</body>
+</html>

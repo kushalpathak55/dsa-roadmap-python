@@ -1,0 +1,21 @@
+<div class="player-controls">
+  <div class="player-buttons">
+    <button id="btn-reset" type="button" title="Reset (Home)">⏮</button>
+    <button id="btn-step-back" type="button" title="Step back (←)">◀</button>
+    <button id="btn-play" type="button" title="Play/Pause (Space)">▶</button>
+    <button id="btn-step-forward" type="button" title="Step forward (→)">▶|</button>
+  </div>
+  <div class="player-scrub">
+    <input id="scrub" type="range" min="0" max="0" value="0" step="1">
+    <span id="scrub-label">0 / 0</span>
+  </div>
+  <div class="player-speed">
+    <label for="speed">Speed</label>
+    <input id="speed" type="range" min="50" max="1000" value="400" step="50">
+  </div>
+</div>
+<div class="key-hints">space play/pause &middot; &larr; &rarr; step &middot; home reset</div>
+<div class="status-bar">
+  <div id="note" class="player-note" aria-live="off">Configure an input and press Run to begin.</div>
+  <div id="counters" class="player-counters"></div>
+</div>

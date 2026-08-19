@@ -1,0 +1,285 @@
+# Single source of truth for the roadmap nav + routing.
+# category order below = display order.
+# status: built (has a live visualizer) | content_only (written, no algorithm to
+#   run - e.g. a concept page) | coming_soon (placeholder, not written yet).
+# algo_key must match a key in app/algorithms/registry.py ALGORITHMS when status: built.
+# family selects which JS renderer the topic page mounts: array (Canvas bars) or list (DOM boxes).
+# motion selects the decorative CSS analogy animation next to the ELI5 box (see partials/_motion.html).
+
+- slug: big-o
+  category: Foundations
+  title: "Big-O Notation"
+  order: 1
+  status: content_only
+  motion: growth
+  markdown: big_o.md
+
+- slug: linear-search
+  category: Arrays & Searching
+  title: "Linear Search"
+  order: 1
+  status: built
+  algo_key: linear_search
+  family: array
+  motion: magnify
+  markdown: linear_search.md
+
+- slug: binary-search
+  category: Arrays & Searching
+  title: "Binary Search"
+  order: 2
+  status: built
+  algo_key: binary_search
+  family: array
+  motion: magnify
+  markdown: binary_search.md
+
+- slug: two-pointers
+  category: Array Techniques
+  title: "Two Pointers"
+  order: 1
+  status: built
+  algo_key: two_pointer_sum
+  family: array
+  motion: magnify
+  markdown: two_pointers.md
+
+- slug: sliding-window
+  category: Array Techniques
+  title: "Sliding Window"
+  order: 2
+  status: built
+  algo_key: sliding_window_max_sum
+  family: array
+  motion: grid-fill
+  markdown: sliding_window.md
+
+- slug: bubble-sort
+  category: Sorting
+  title: "Bubble Sort"
+  order: 1
+  status: built
+  algo_key: bubble_sort
+  family: array
+  motion: bubbles
+  markdown: bubble_sort.md
+
+- slug: selection-sort
+  category: Sorting
+  title: "Selection Sort"
+  order: 2
+  status: built
+  algo_key: selection_sort
+  family: array
+  motion: bubbles
+  markdown: selection_sort.md
+
+- slug: insertion-sort
+  category: Sorting
+  title: "Insertion Sort"
+  order: 3
+  status: built
+  algo_key: insertion_sort
+  family: array
+  motion: bubbles
+  markdown: insertion_sort.md
+
+- slug: merge-sort
+  category: Sorting
+  title: "Merge Sort"
+  order: 4
+  status: built
+  algo_key: merge_sort
+  family: array
+  motion: split-merge
+  markdown: merge_sort.md
+
+- slug: quick-sort
+  category: Sorting
+  title: "Quick Sort"
+  order: 5
+  status: built
+  algo_key: quick_sort
+  family: array
+  motion: split-merge
+  markdown: quick_sort.md
+
+- slug: heap-sort
+  category: Sorting
+  title: "Heap Sort"
+  order: 6
+  status: built
+  algo_key: heap_sort
+  family: array
+  motion: tree
+  markdown: heap_sort.md
+
+- slug: singly-linked-list
+  category: Linked Lists
+  title: "Singly Linked List"
+  order: 1
+  status: built
+  algo_key: linked_list_demo
+  family: list
+  motion: chain
+  markdown: singly_linked_list.md
+
+- slug: stack
+  category: Stacks & Queues
+  title: "Stack"
+  order: 1
+  status: built
+  algo_key: stack_demo
+  family: list
+  motion: stack
+  markdown: stack.md
+
+- slug: queue
+  category: Stacks & Queues
+  title: "Queue"
+  order: 2
+  status: built
+  algo_key: queue_demo
+  family: list
+  motion: queue
+  markdown: queue.md
+
+- slug: hash-table
+  category: Hashing
+  title: "Hash Table (Chaining)"
+  order: 1
+  status: built
+  algo_key: hash_table_demo
+  family: hash
+  motion: buckets
+  markdown: hash_table.md
+
+- slug: binary-search-tree
+  category: Trees
+  title: "Binary Search Tree"
+  order: 1
+  status: built
+  algo_key: bst_ops
+  family: tree
+  motion: tree
+  markdown: binary_search_tree.md
+
+- slug: tree-traversals
+  category: Trees
+  title: "Tree Traversals"
+  order: 2
+  status: built
+  algo_key: tree_traversal_demo
+  family: tree
+  motion: tree
+  markdown: tree_traversals.md
+
+- slug: trie
+  category: Trees
+  title: "Trie (Prefix Tree)"
+  order: 3
+  status: built
+  algo_key: trie_demo
+  family: tree
+  motion: tree
+  markdown: trie.md
+
+- slug: union-find
+  category: Trees
+  title: "Union-Find (Disjoint Set)"
+  order: 4
+  status: built
+  algo_key: union_find_demo
+  family: tree
+  motion: network
+  markdown: union_find.md
+
+- slug: binary-heap
+  category: Heaps
+  title: "Binary Heap"
+  order: 1
+  status: built
+  algo_key: binary_heap_demo
+  family: tree
+  motion: tree
+  markdown: binary_heap.md
+
+- slug: bfs
+  category: Graphs
+  title: "Breadth-First Search"
+  order: 1
+  status: built
+  algo_key: bfs_demo
+  family: graph
+  motion: network
+  markdown: bfs.md
+
+- slug: dfs
+  category: Graphs
+  title: "Depth-First Search"
+  order: 2
+  status: built
+  algo_key: dfs_demo
+  family: graph
+  motion: network
+  markdown: dfs.md
+
+- slug: dijkstra
+  category: Graphs
+  title: "Dijkstra's Algorithm"
+  order: 3
+  status: built
+  algo_key: dijkstra_demo
+  family: graph
+  motion: network
+  markdown: dijkstra.md
+
+- slug: topological-sort
+  category: Graphs
+  title: "Topological Sort"
+  order: 4
+  status: built
+  algo_key: topological_sort_demo
+  family: graph
+  motion: network
+  markdown: topological_sort.md
+
+- slug: fibonacci-memo
+  category: Dynamic Programming
+  title: "Fibonacci (Memoization)"
+  order: 1
+  status: built
+  algo_key: fibonacci_memo
+  family: dp
+  motion: grid-fill
+  markdown: fibonacci_memo.md
+
+- slug: knapsack
+  category: Dynamic Programming
+  title: "0/1 Knapsack"
+  order: 2
+  status: built
+  algo_key: knapsack
+  family: dp
+  motion: grid-fill
+  markdown: knapsack.md
+
+- slug: lcs
+  category: Dynamic Programming
+  title: "Longest Common Subsequence"
+  order: 3
+  status: built
+  algo_key: lcs
+  family: dp
+  motion: grid-fill
+  markdown: lcs.md
+
+- slug: n-queens
+  category: Backtracking
+  title: "N-Queens"
+  order: 1
+  status: built
+  algo_key: n_queens
+  family: dp
+  motion: grid-fill
+  markdown: n_queens.md

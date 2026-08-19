@@ -1,0 +1,76 @@
+{% if topic.motion == "bubbles" %}
+<div class="motion-scene motion-bubbles" aria-hidden="true">
+  <span class="motion-circle" style="--d:0"></span>
+  <span class="motion-circle" style="--d:1"></span>
+  <span class="motion-circle" style="--d:2"></span>
+  <span class="motion-circle" style="--d:3"></span>
+  <span class="motion-circle" style="--d:4"></span>
+</div>
+{% elif topic.motion == "split-merge" %}
+<div class="motion-scene motion-split" aria-hidden="true">
+  <div class="motion-group motion-group-left">
+    <span class="motion-dot"></span><span class="motion-dot"></span>
+  </div>
+  <div class="motion-group motion-group-right">
+    <span class="motion-dot"></span><span class="motion-dot"></span>
+  </div>
+</div>
+{% elif topic.motion == "magnify" %}
+<div class="motion-scene motion-magnify" aria-hidden="true">
+  <div class="motion-row">
+    <span class="motion-dot"></span><span class="motion-dot"></span><span class="motion-dot"></span><span class="motion-dot"></span><span class="motion-dot"></span>
+  </div>
+  <span class="motion-glass">🔍</span>
+</div>
+{% elif topic.motion == "chain" %}
+<div class="motion-scene motion-chain" aria-hidden="true">
+  <span class="motion-node"></span><span class="motion-link"></span><span class="motion-node"></span><span class="motion-link"></span><span class="motion-node"></span><span class="motion-link"></span><span class="motion-node"></span>
+  <span class="motion-traveler"></span>
+</div>
+{% elif topic.motion == "stack" %}
+<div class="motion-scene motion-stack" aria-hidden="true">
+  <span class="motion-block" style="--d:0"></span>
+  <span class="motion-block" style="--d:1"></span>
+  <span class="motion-block" style="--d:2"></span>
+</div>
+{% elif topic.motion == "queue" %}
+<div class="motion-scene motion-queue" aria-hidden="true">
+  <span class="motion-dot" style="--d:0"></span>
+  <span class="motion-dot" style="--d:1"></span>
+  <span class="motion-dot" style="--d:2"></span>
+  <span class="motion-dot" style="--d:3"></span>
+</div>
+{% elif topic.motion == "buckets" %}
+<div class="motion-scene motion-buckets" aria-hidden="true">
+  <div class="motion-bucket-col"><span class="motion-ball" style="--d:0"></span><span class="motion-bucket"></span></div>
+  <div class="motion-bucket-col"><span class="motion-ball" style="--d:1"></span><span class="motion-bucket"></span></div>
+  <div class="motion-bucket-col"><span class="motion-ball" style="--d:2"></span><span class="motion-bucket"></span></div>
+  <div class="motion-bucket-col"><span class="motion-ball" style="--d:3"></span><span class="motion-bucket"></span></div>
+</div>
+{% elif topic.motion == "tree" %}
+<div class="motion-scene motion-tree" aria-hidden="true">
+  <span class="motion-node" style="--d:2"></span>
+  <span class="motion-node" style="--d:1"></span>
+  <span class="motion-node" style="--d:0"></span>
+  <span class="motion-node" style="--d:1"></span>
+  <span class="motion-node" style="--d:2"></span>
+</div>
+{% elif topic.motion == "network" %}
+<div class="motion-scene motion-network" aria-hidden="true">
+  <span class="motion-node" style="--d:2"></span>
+  <span class="motion-node" style="--d:1"></span>
+  <span class="motion-node" style="--d:0"></span>
+  <span class="motion-node" style="--d:1"></span>
+  <span class="motion-node" style="--d:2"></span>
+</div>
+{% elif topic.motion == "grid-fill" %}
+<div class="motion-scene motion-grid" aria-hidden="true">
+  {% for i in range(9) %}<span class="motion-cell" style="--d:{{ i }}"></span>{% endfor %}
+</div>
+{% elif topic.motion == "growth" %}
+<div class="motion-scene motion-growth" aria-hidden="true">
+  <span class="motion-growth-bar motion-growth-o1"></span>
+  <span class="motion-growth-bar motion-growth-on"></span>
+  <span class="motion-growth-bar motion-growth-on2"></span>
+</div>
+{% endif %}

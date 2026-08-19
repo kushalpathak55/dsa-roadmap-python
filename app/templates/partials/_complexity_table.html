@@ -1,0 +1,24 @@
+<table class="complexity-table">
+  <thead>
+    <tr><th></th><th>Best</th><th>Average</th><th>Worst</th><th>Space</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Time / Space</td>
+      <td><code>{{ topic.complexity.time_best }}</code></td>
+      <td><code>{{ topic.complexity.time_avg }}</code></td>
+      <td><code>{{ topic.complexity.time_worst }}</code></td>
+      <td><code>{{ topic.complexity.space }}</code></td>
+    </tr>
+  </tbody>
+</table>
+{% if topic.complexity.stable is not none or topic.complexity.in_place is not none %}
+<ul class="complexity-flags">
+  {% if topic.complexity.stable is not none %}
+    <li><strong>Stable:</strong> {{ "Yes" if topic.complexity.stable else "No" }}</li>
+  {% endif %}
+  {% if topic.complexity.in_place is not none %}
+    <li><strong>In-place:</strong> {{ "Yes" if topic.complexity.in_place else "No" }}</li>
+  {% endif %}
+</ul>
+{% endif %}
