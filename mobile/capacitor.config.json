@@ -1,0 +1,12 @@
+{
+  "appId": "com.kushalpathak.dsaroadmap",
+  "appName": "DSA Roadmap",
+  "webDir": "www",
+  "server": {
+    "url": "https://dsa-roadmap-python.onrender.com",
+    "cleartext": false
+  },
+  "ios": {
+    "contentInset": "automatic"
+  }
+}

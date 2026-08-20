@@ -1,0 +1,5 @@
+app_identifier("com.kushalpathak.dsaroadmap")
+# apple_id and itc_team_id/team_id are intentionally not hardcoded here -
+# fastlane reads them from env vars set as GitHub Actions secrets
+# (FASTLANE_APPLE_ID, APPLE_TEAM_ID) so nothing account-specific lives in
+# version control.

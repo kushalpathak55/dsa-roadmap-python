@@ -1,0 +1,77 @@
+name: iOS TestFlight release
+
+# Manually triggered from the Actions tab - App Store/TestFlight uploads
+# shouldn't happen on every push. Runs on GitHub's macOS runner, which is
+# free/unlimited for public repos.
+on:
+  workflow_dispatch:
+
+env:
+  APP_IDENTIFIER: com.kushalpathak.dsaroadmap
+
+jobs:
+  build-and-upload:
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: mobile/ios/App
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install web wrapper dependencies and sync native project
+        working-directory: mobile
+        run: |
+          npm ci
+          npx cap sync ios
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: mobile/ios/App
+
+      - name: Decode signing certificate
+        run: echo "$IOS_CERTIFICATE_P12_BASE64" | base64 --decode > certificate.p12
+        env:
+          IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
+
+      - name: Decode provisioning profile
+        run: echo "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode > profile.mobileprovision
+        env:
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+
+      - name: Reconstruct App Store Connect API key
+        run: |
+          echo "$ASC_KEY_CONTENT_BASE64" | base64 --decode > asc_key.p8
+          python3 - <<'PY'
+          import json
+          with open("asc_key.p8") as f:
+              key = f.read()
+          with open("app_store_connect_api_key.json", "w") as f:
+              json.dump({
+                  "key_id": "${{ secrets.ASC_KEY_ID }}",
+                  "issuer_id": "${{ secrets.ASC_ISSUER_ID }}",
+                  "key": key,
+                  "in_house": False,
+                  "duration": 1200,
+              }, f)
+          PY
+        env:
+          ASC_KEY_CONTENT_BASE64: ${{ secrets.ASC_KEY_CONTENT_BASE64 }}
+
+      - name: Build and upload to TestFlight
+        run: bundle exec fastlane beta
+        env:
+          CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          PROVISIONING_PROFILE_NAME: ${{ secrets.IOS_PROVISIONING_PROFILE_NAME }}
+          FASTLANE_APPLE_ID: ${{ secrets.FASTLANE_APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          FASTLANE_DISABLE_COLORS: "1"
+
+      - name: Clean up secret files
+        if: always()
+        run: rm -f certificate.p12 profile.mobileprovision asc_key.p8 app_store_connect_api_key.json

@@ -1,0 +1,40 @@
+default_platform(:ios)
+
+# All account-specific values (certificate, provisioning profile, API key)
+# arrive as base64-encoded GitHub Actions secrets and are decoded to files
+# by the workflow before this lane runs - nothing here is specific to any
+# one Apple account, so this file is safe to commit.
+platform :ios do
+  desc "Build and upload a new build to TestFlight"
+  lane :beta do
+    setup_ci
+
+    import_certificate(
+      certificate_path: "certificate.p12",
+      certificate_password: ENV["CERTIFICATE_PASSWORD"],
+    )
+
+    install_provisioning_profile(path: "profile.mobileprovision")
+
+    build_number = latest_testflight_build_number(
+      api_key_path: "app_store_connect_api_key.json",
+    ) + 1
+    increment_build_number(build_number: build_number, xcodeproj: "App.xcodeproj")
+
+    build_app(
+      workspace: "App.xcworkspace",
+      scheme: "App",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          ENV["APP_IDENTIFIER"] => ENV["PROVISIONING_PROFILE_NAME"],
+        },
+      },
+    )
+
+    upload_to_testflight(
+      api_key_path: "app_store_connect_api_key.json",
+      skip_waiting_for_build_processing: true,
+    )
+  end
+end
