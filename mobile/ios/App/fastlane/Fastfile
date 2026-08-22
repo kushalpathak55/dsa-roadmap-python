@@ -16,6 +16,16 @@ platform :ios do
       keychain_password: "",
     )
 
+    # macOS enforces ACLs on imported private keys - without granting the
+    # codesign/security tools access to this keychain's partition list,
+    # xcodebuild can "see" the certificate but silently can't actually use
+    # its private key, which surfaces as a generic "no identity found" error
+    # further down rather than a permissions error here.
+    sh("security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k '' fastlane_tmp_keychain")
+
+    sh("security list-keychains")
+    sh("security find-identity -v -p codesigning fastlane_tmp_keychain || true")
+
     install_provisioning_profile(path: "profile.mobileprovision")
 
     build_number = latest_testflight_build_number(
