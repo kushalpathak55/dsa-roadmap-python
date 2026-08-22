@@ -32,6 +32,12 @@ platform :ios do
           ENV["APP_IDENTIFIER"] => ENV["PROVISIONING_PROFILE_NAME"],
         },
       },
+      xcargs: [
+        "CODE_SIGN_STYLE=Manual",
+        "DEVELOPMENT_TEAM=#{ENV['APPLE_TEAM_ID']}",
+        "PROVISIONING_PROFILE_SPECIFIER=\"#{ENV['PROVISIONING_PROFILE_NAME']}\"",
+        "CODE_SIGN_IDENTITY=\"Apple Distribution\"",
+      ].join(" "),
     )
 
     upload_to_testflight(
