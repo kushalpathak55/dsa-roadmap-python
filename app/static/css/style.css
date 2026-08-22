@@ -148,6 +148,22 @@ a { color: var(--accent); }
   overflow-y: auto;
 }
 
+/* Off-canvas drawer chrome only ever appears below the mobile breakpoint -
+   see the @media block further down. Hidden here so it takes no space and
+   has no effect on the desktop layout. */
+.mobile-topbar,
+.sidebar-backdrop,
+.sidebar-close {
+  display: none;
+}
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.sidebar-header .brand { margin-bottom: 0; }
+
 .brand {
   display: block;
   font-weight: 600;
@@ -1081,20 +1097,104 @@ canvas#stage {
   .motion-scene * { animation: none !important; }
 }
 
-/* Phones and small tablets (iPhone/iPad portrait and similar): stack the sidebar
-   above the content as a horizontally-scrolling bar instead of a fixed left rail,
-   and grow touch targets to Apple's 44pt minimum. */
+/* Phones and small tablets (iPhone/iPad portrait and similar): the sidebar
+   becomes a hidden-by-default off-canvas drawer (opened via the hamburger
+   button in a sticky top bar) instead of squeezing all 28 topics into a
+   scrolling block above the page content - and touch targets grow to
+   Apple's 44pt minimum. */
 @media (max-width: 780px) {
-  .layout { flex-direction: column; min-height: auto; }
-
-  .sidebar {
-    width: 100%;
-    max-height: 40vh;
-    border-right: none;
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 120;
+    background: var(--surface);
     border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    padding-top: max(10px, env(safe-area-inset-top));
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
   }
+  .mobile-topbar .brand { margin-bottom: 0; }
+
+  .sidebar-toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    width: 44px;
+    height: 44px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0;
+    cursor: pointer;
+  }
+  .sidebar-toggle-bar {
+    display: block;
+    height: 2px;
+    margin: 0 9px;
+    background: var(--text-secondary);
+    border-radius: 1px;
+  }
+
+  .mobile-search-trigger {
+    width: 44px;
+    height: 44px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 140;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .sidebar-backdrop.open { opacity: 1; pointer-events: auto; }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 150;
+    width: min(85vw, 320px);
+    height: 100%;
+    height: 100dvh;
+    max-height: none;
+    border-right: 1px solid var(--border);
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-top: max(16px, env(safe-area-inset-top));
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: 2px 0 24px rgba(0, 0, 0, 0.45);
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  .sidebar-close {
+    display: block;
+    width: 32px;
+    height: 32px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  body.sidebar-locked { overflow: hidden; }
 
   .content {
     padding: 20px;

@@ -27,9 +27,22 @@
       <div class="cmdk-empty" id="cmdk-empty" hidden role="status">No topics match.</div>
     </div>
   </div>
+  <div class="mobile-topbar">
+    <button type="button" id="sidebar-toggle" class="sidebar-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Open menu">
+      <span class="sidebar-toggle-bar"></span>
+      <span class="sidebar-toggle-bar"></span>
+      <span class="sidebar-toggle-bar"></span>
+    </button>
+    <a class="brand" href="/">DSA Roadmap</a>
+    <button type="button" id="mobile-search-trigger" class="mobile-search-trigger" aria-label="Jump to a topic">🔍</button>
+  </div>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
   <div class="layout">
-    <nav class="sidebar" aria-label="Roadmap">
-      <a class="brand" href="/">DSA Roadmap</a>
+    <nav class="sidebar" id="sidebar" aria-label="Roadmap">
+      <div class="sidebar-header">
+        <a class="brand" href="/">DSA Roadmap</a>
+        <button type="button" id="sidebar-close" class="sidebar-close" aria-label="Close menu">&times;</button>
+      </div>
       <button type="button" id="cmdk-trigger" class="cmdk-trigger" aria-haspopup="dialog">
         <span>jump to...</span>
         <span class="cmdk-trigger-key">Ctrl K</span>
@@ -61,5 +74,6 @@
   </div>
   <script src="{{ url_for('static', path='js/core/progress.js') }}"></script>
   <script src="{{ url_for('static', path='js/core/command_palette.js') }}"></script>
+  <script src="{{ url_for('static', path='js/core/sidebar.js') }}"></script>
 </body>
 </html>
