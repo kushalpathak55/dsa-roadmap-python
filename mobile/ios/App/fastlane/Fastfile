@@ -9,10 +9,19 @@ platform :ios do
   lane :beta do
     setup_ci
 
+    # Ask the system which keychain setup_ci actually made the default,
+    # rather than assuming the bare name "fastlane_tmp_keychain" resolves
+    # the same way in every subsequent command - avoids a keychain-path
+    # mismatch between import_certificate and later security/xcodebuild
+    # calls, which otherwise fails silently (the item "imports" successfully
+    # into one keychain while the build searches a different one).
+    keychain_path = sh("security default-keychain", log: false).strip.delete('"')
+    UI.message("Resolved CI keychain path: #{keychain_path}")
+
     import_certificate(
       certificate_path: "certificate.p12",
       certificate_password: ENV["CERTIFICATE_PASSWORD"],
-      keychain_name: "fastlane_tmp_keychain",
+      keychain_path: keychain_path,
       keychain_password: "",
     )
 
@@ -21,10 +30,10 @@ platform :ios do
     # xcodebuild can "see" the certificate but silently can't actually use
     # its private key, which surfaces as a generic "no identity found" error
     # further down rather than a permissions error here.
-    sh("security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k '' fastlane_tmp_keychain")
+    sh("security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k '' \"#{keychain_path}\"")
 
     sh("security list-keychains")
-    sh("security find-identity -v -p codesigning fastlane_tmp_keychain || true")
+    sh("security find-identity -v -p codesigning \"#{keychain_path}\" || true")
 
     install_provisioning_profile(path: "profile.mobileprovision")
 
