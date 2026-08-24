@@ -60,6 +60,7 @@ class Topic:
     order: int
     status: str  # "built" | "content_only" | "coming_soon"
     markdown: str
+    why: str = ""
     algo_key: str | None = None
     family: str | None = None
     motion: str | None = None
@@ -139,6 +140,7 @@ def _load_topic_content(topic_meta: dict) -> Topic:
         order=topic_meta.get("order", 0),
         status=topic_meta.get("status", "coming_soon"),
         markdown=topic_meta["markdown"],
+        why=topic_meta.get("why", ""),
         algo_key=topic_meta.get("algo_key"),
         family=topic_meta.get("family"),
         motion=topic_meta.get("motion"),

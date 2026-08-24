@@ -1,14 +1,21 @@
 /* ============================================================================
-   DESIGN TOKENS — "Debugger": an IDE/terminal-inspired identity, committed to
-   dark the way a real editor theme is (not a light site with a dark option
-   bolted on). Every color below is a deliberate pick tied to a real role in
-   a code editor's world - see the comments - not a generic dark-mode invert.
+   DESIGN TOKENS — "Debugger": an IDE/terminal-inspired identity. Dark is the
+   primary, dark-first world (every color below is a deliberate pick tied to
+   a real role in a code editor's world, not a generic dark-mode invert), but
+   it now ships with a real second palette - "Debugger Light" - rather than
+   staying dark-only. Not a naive inversion: category/accent/viz colors are
+   used two ways in this stylesheet (flat ink directly on the page, AND as
+   solid fills with --fill-ink text on top - see that token's own comment),
+   and a color that glows correctly on near-black doesn't necessarily read on
+   white in either role, so light-mode values were re-picked and verified
+   against WCAG contrast for both roles, not derived from the dark ones.
 
-   This is a single committed visual world, so there is intentionally no
-   prefers-color-scheme:light override here (see artifact-design guidance on
-   themes that commit to one world). If a light "IDE Light+" variant is ever
-   wanted, it should be designed as its own considered palette, not a naive
-   inversion of this one.
+   Pattern: this bare :root is the complete DARK palette (dark-first, so it's
+   the default with no [data-theme] stamp and no OS preference). The light
+   palette lives in two places that must stay in sync - a
+   prefers-color-scheme:light block (guarded so an explicit dark toggle beats
+   a light OS) and an explicit [data-theme="light"] block (so the toggle also
+   wins over a dark OS). See theme.js for the toggle itself.
    ========================================================================= */
 :root {
   color-scheme: dark;
@@ -28,13 +35,14 @@
   --baseline: #333b4d;
   --border: rgba(255, 255, 255, 0.09);
 
-  /* Every accent/viz/category color below is a light, syntax-highlight-style
-     pastel meant to sit ON --page as foreground text or a slim accent - not
-     to have text sit on top of IT. Anywhere a label is drawn directly on one
-     of those fills (a filled node circle, a highlighted table cell), it must
-     use --fill-ink, not white - white-on-pastel fails contrast here on
-     purpose, because these colors were picked to glow on dark, not to be a
-     solid button/badge fill themselves. */
+  /* Every accent/viz/category color below is used two ways: as foreground
+     ink directly on --page/--surface (nav labels, borders, checkmarks), and
+     as a solid fill with a label drawn ON TOP of it (a filled node circle, a
+     predict-mode button, a highlighted table cell) - that second role always
+     needs --fill-ink for its text, never a hardcoded white/black, because
+     which one reads depends on the theme: pastels-on-near-black (dark theme)
+     need dark ink; the darker, more saturated swatches light theme uses for
+     the same tokens need light ink instead - see the light block below. */
   --fill-ink: #0b0e14;
 
   /* A 4px radius throughout - tight and rectangular, a tool's chrome rather
@@ -77,6 +85,110 @@
   --cat-8: #f07178; /* red - Heaps */
 }
 
+/* Debugger Light - values re-picked and WCAG-verified for both the ink and
+   fill roles described above, not a filter:invert() of the dark palette.
+   Kept in sync with the [data-theme="light"] block below on purpose - two
+   copies rather than one shared selector, to make the OS-vs-explicit
+   precedence rules (see the :not() guard) work without extra specificity
+   tricks. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+
+    --page: #f3f5f9;
+    --surface: #ffffff;
+    --surface-2: #e9edf5;
+
+    --text-primary: #1a2030;
+    --text-secondary: #4c5568;
+    --muted: #7c869c;
+
+    --gridline: #dde2ec;
+    --baseline: #c7cedd;
+    --border: rgba(10, 14, 20, 0.1);
+
+    --fill-ink: #f7f9fc;
+
+    --accent: #1c6fc9;
+    --accent-hover: #0f5aa8;
+
+    --viz-default: #1c6fc9;
+    --viz-pivot: #8b3fbf;
+    --viz-compare: #a5590d;
+    --viz-swap: #c23b46;
+    --viz-sorted: #3f7a30;
+
+    --cat-1: #1c6fc9;
+    --cat-2: #a5590d;
+    --cat-3: #3f7a30;
+    --cat-4: #906413;
+    --cat-5: #a83a86;
+    --cat-6: #0e7c8a;
+    --cat-7: #8b3fbf;
+    --cat-8: #c23b46;
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --page: #f3f5f9;
+  --surface: #ffffff;
+  --surface-2: #e9edf5;
+
+  --text-primary: #1a2030;
+  --text-secondary: #4c5568;
+  --muted: #7c869c;
+
+  --gridline: #dde2ec;
+  --baseline: #c7cedd;
+  --border: rgba(10, 14, 20, 0.1);
+
+  --fill-ink: #f7f9fc;
+
+  --accent: #1c6fc9;
+  --accent-hover: #0f5aa8;
+
+  --viz-default: #1c6fc9;
+  --viz-pivot: #8b3fbf;
+  --viz-compare: #a5590d;
+  --viz-swap: #c23b46;
+  --viz-sorted: #3f7a30;
+
+  --cat-1: #1c6fc9;
+  --cat-2: #a5590d;
+  --cat-3: #3f7a30;
+  --cat-4: #906413;
+  --cat-5: #a83a86;
+  --cat-6: #0e7c8a;
+  --cat-7: #8b3fbf;
+  --cat-8: #c23b46;
+}
+
+/* ============================================================================
+   TYPOGRAPHY SCALE — two tiers. "Reading" tokens are genuinely fluid
+   (clamp(), interpolated between a 375px and a 1400px viewport - .content
+   caps at 1100px and the sidebar is a fixed 260px, so there's no wider
+   layout worth growing into past ~1400px total width). "Chrome" tokens are
+   static rem, named only for consistency across the IDE furniture (badges,
+   nav, cmdk rows, data tables) that lives in fixed-width containers and has
+   nothing to gain from viewport-fluid sizing.
+   ========================================================================= */
+:root {
+  /* Reading tier - fluid, saturates at viewport = 1400px. */
+  --fs-h1: clamp(1.75rem, 1.3841rem + 1.561vw, 2.75rem);
+  --fs-h2: clamp(1.375rem, 1.1463rem + 0.976vw, 2rem);
+  --fs-lg: clamp(1.125rem, 1.0335rem + 0.390vw, 1.375rem);
+  --fs-body: clamp(1rem, 0.9543rem + 0.195vw, 1.125rem);
+
+  /* Chrome tier - static, consolidated from ~30 near-duplicate values. */
+  --fs-2xs: 0.65rem;
+  --fs-xs: 0.72rem;
+  --fs-sm: 0.78rem;
+  --fs-md: 0.85rem;
+  --fs-base-ui: 0.95rem;
+}
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -84,10 +196,14 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body {
   margin: 0;
   font-family: var(--mono);
+  font-size: var(--fs-body);
   background: var(--page);
   color: var(--text-primary);
   overflow-x: hidden;
 }
+
+h1 { font-size: var(--fs-h1); margin: 0; }
+h2 { font-size: var(--fs-h2); margin: 0; }
 
 /* Prose reads in --sans (actual paragraphs of explanation), but a heading
    inside a prose block stays on the structural --mono face, like a comment
@@ -123,7 +239,7 @@ a { color: var(--accent); }
   padding: 8px 14px;
   border-radius: var(--radius);
   font-family: var(--mono);
-  font-size: 0.85rem;
+  font-size: var(--fs-md);
   font-weight: 600;
   text-decoration: none;
   transition: top 0.15s ease;
@@ -159,10 +275,28 @@ a { color: var(--accent); }
 .sidebar-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
   margin-bottom: 18px;
 }
-.sidebar-header .brand { margin-bottom: 0; }
+.sidebar-header .brand { margin-bottom: 0; flex: 1; min-width: 0; }
+
+.theme-toggle {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  min-height: 0;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.theme-toggle:hover { border-color: var(--muted); }
 
 .brand {
   display: block;
@@ -178,7 +312,7 @@ a { color: var(--accent); }
 }
 
 .progress-summary {
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   color: var(--muted);
   margin: -8px 0 16px;
   min-height: 1em;
@@ -193,37 +327,105 @@ a { color: var(--accent); }
   border-radius: var(--radius);
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   padding: 5px 8px;
   cursor: pointer;
 }
 .progress-reset:hover { color: var(--text-secondary); border-color: var(--muted); }
+/* Pre-existing bug, fixed in passing: author display:block always beats the
+   UA [hidden]{display:none} rule regardless of specificity, so the button
+   never actually hid at 0% progress despite progress.js toggling `hidden`. */
+.progress-reset[hidden] { display: none; }
+
+.cmdk-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
 
 .cmdk-trigger {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  width: 100%;
-  margin-bottom: 14px;
+  flex: 1;
+  min-width: 0;
   padding: 6px 10px;
   background: var(--page);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 0.78rem;
+  font-size: var(--fs-sm);
   cursor: pointer;
   text-align: left;
 }
 .cmdk-trigger:hover { border-color: var(--muted); color: var(--text-secondary); }
 .cmdk-trigger-key {
-  font-size: 0.68rem;
+  font-size: var(--fs-2xs);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1px 5px;
   color: var(--muted);
   flex-shrink: 0;
+}
+
+.onboarding-trigger {
+  flex-shrink: 0;
+  width: 36px;
+  background: var(--page);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-weight: 700;
+  cursor: pointer;
+}
+.onboarding-trigger:hover { border-color: var(--muted); color: var(--text-secondary); }
+
+/* ---------------------------------------------------------------------
+   Tooltips - pure CSS, revealed on hover/focus-visible. Scoped narrowly to
+   the two triggers that actually need a discovery hint; see style.css
+   comments at each usage site for why other candidates were excluded.
+   --------------------------------------------------------------------- */
+[data-tooltip] { position: relative; }
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  padding: 5px 9px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 60;
+}
+[data-tooltip]:hover::after,
+[data-tooltip]:focus-visible::after {
+  opacity: 1;
+}
+
+/* #cmdk-trigger lives near the top of the scrolling sidebar, so a tooltip
+   positioned above/centered would get clipped by the sidebar's own
+   overflow-y:auto box. Anchor it below and left-aligned instead, wrapped to
+   a bounded width so it never spills past the sidebar's right edge. */
+#cmdk-trigger[data-tooltip]::after {
+  left: 0;
+  bottom: auto;
+  top: calc(100% + 6px);
+  transform: none;
+  white-space: normal;
+  width: max-content;
+  max-width: 210px;
 }
 
 .cmdk-overlay {
@@ -259,7 +461,7 @@ a { color: var(--accent); }
   border-bottom: 1px solid var(--border);
   color: var(--text-primary);
   font-family: var(--mono);
-  font-size: 0.95rem;
+  font-size: var(--fs-base-ui);
 }
 .cmdk-input:focus { outline: none; }
 
@@ -277,18 +479,90 @@ a { color: var(--accent); }
   padding: 8px 10px;
   border-radius: var(--radius);
   color: var(--text-secondary);
-  font-size: 0.86rem;
+  font-size: var(--fs-md);
   cursor: pointer;
 }
 .cmdk-result.active { background: var(--surface-2); color: var(--text-primary); }
-.cmdk-result-category { color: var(--muted); font-size: 0.76rem; white-space: nowrap; }
+.cmdk-result-category { color: var(--muted); font-size: var(--fs-sm); white-space: nowrap; }
 
 .cmdk-empty {
   padding: 16px;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: var(--fs-md);
   text-align: center;
 }
+
+/* ---------------------------------------------------------------------
+   Onboarding overlay - a short, text-only first-run tour. Follows the
+   cmdk-overlay pattern (hidden-attribute toggling, role=dialog) but adds a
+   real focus trap (two focusable buttons here, not cmdk's single input) and
+   moves focus to each step's heading so a screen reader announces the step
+   change - see onboarding.js.
+   --------------------------------------------------------------------- */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 160;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.onboarding-overlay:not([hidden]) { display: flex; }
+
+.onboarding-dialog {
+  width: min(420px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  padding: 24px;
+}
+
+.onboarding-step h2 {
+  margin: 0 0 10px;
+  font-size: var(--fs-lg);
+}
+.onboarding-step h2:focus { outline: 2px solid var(--accent); outline-offset: 3px; }
+.onboarding-step p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--sans);
+  line-height: 1.6;
+}
+.onboarding-step kbd {
+  font-family: var(--mono);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 5px;
+  background: var(--page);
+  color: var(--text-primary);
+  font-size: var(--fs-xs);
+}
+
+.onboarding-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 22px;
+}
+.onboarding-dots { display: flex; gap: 6px; }
+.onboarding-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gridline);
+}
+.onboarding-dot.active { background: var(--accent); }
+.onboarding-actions { display: flex; gap: 8px; }
+.onboarding-skip {
+  background: none;
+  color: var(--muted);
+}
+.onboarding-skip:hover { color: var(--text-secondary); }
+
+body.onboarding-locked { overflow: hidden; }
 
 .nav-category { margin-bottom: 14px; }
 
@@ -296,7 +570,7 @@ a { color: var(--accent); }
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.74rem;
+  font-size: var(--fs-sm);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -304,7 +578,7 @@ a { color: var(--accent); }
   margin-bottom: 6px;
 }
 
-.nav-category-emoji { font-size: 0.95rem; }
+.nav-category-emoji { font-size: var(--fs-base-ui); }
 
 .nav-topics { list-style: none; margin: 0; padding: 0; }
 
@@ -314,7 +588,7 @@ a { color: var(--accent); }
   border-radius: var(--radius);
   text-decoration: none;
   color: var(--text-secondary);
-  font-size: 0.85rem;
+  font-size: var(--fs-md);
   border-left: 2px solid transparent;
 }
 .nav-topic::before {
@@ -334,7 +608,7 @@ a { color: var(--accent); }
 .nav-topic.completed::before { content: "✓ "; color: var(--viz-sorted); }
 
 .badge {
-  font-size: 0.65rem;
+  font-size: var(--fs-2xs);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1px 4px;
@@ -352,17 +626,17 @@ a { color: var(--accent); }
 }
 
 .breadcrumb {
-  font-size: 0.78rem;
+  font-size: var(--fs-sm);
   color: var(--muted);
   margin-bottom: 6px;
 }
 
 .page-header h1 { margin: 4px 0; }
-.subtitle { color: var(--text-secondary); margin-top: 0; }
+.subtitle { color: var(--text-secondary); margin-top: 0; font-size: var(--fs-lg); }
 
 .category-badge {
   display: inline-block;
-  font-size: 0.76rem;
+  font-size: var(--fs-sm);
   font-weight: 600;
   padding: 3px 9px;
   border-radius: var(--radius);
@@ -391,16 +665,225 @@ a { color: var(--accent); }
   transition: width 0.3s ease;
 }
 .progress-bar-label {
-  font-size: 0.76rem;
+  font-size: var(--fs-sm);
   color: var(--muted);
   white-space: nowrap;
 }
+
+/* ---------------------------------------------------------------------
+   Cards / Timeline view toggle. Both views render server-side in the same
+   page load - toggling is a pure CSS display swap keyed off [data-view] on
+   <html>, no client fetch. index.html stamps the persisted choice onto
+   <html> via a synchronous inline script before these sections are parsed,
+   so there's no flash of the other view on a returning visit.
+   --------------------------------------------------------------------- */
+.roadmap-view-toggle {
+  display: inline-flex;
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.view-toggle-btn {
+  border: none;
+  border-radius: 0;
+  background: var(--page);
+  color: var(--muted);
+  padding: 6px 16px;
+}
+.view-toggle-btn + .view-toggle-btn { border-left: 1px solid var(--border); }
+.view-toggle-btn[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--fill-ink);
+  font-weight: 600;
+}
+.view-toggle-btn[aria-pressed="true"]:hover { background: var(--accent-hover); }
 
 .roadmap-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 16px;
   margin-top: 24px;
+}
+
+#roadmap-timeline, #roadmap-guided { display: none; }
+:root[data-view="timeline"] #roadmap-timeline { display: block; }
+:root[data-view="timeline"] #roadmap-grid { display: none; }
+:root[data-view="guided"] #roadmap-guided { display: block; }
+:root[data-view="guided"] #roadmap-grid { display: none; }
+
+.timeline-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 150px;
+  margin-top: 24px;
+  padding: 0 10px;
+}
+.timeline-track::before {
+  content: "";
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 50%;
+  height: 2px;
+  background: var(--baseline);
+}
+
+.timeline-node {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.timeline-node-dot {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--cat);
+  color: var(--fill-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  border: 2px solid var(--page);
+  box-shadow: 0 0 0 2px var(--cat);
+  transition: transform 0.15s ease;
+}
+.timeline-node:hover .timeline-node-dot,
+.timeline-node:focus-visible .timeline-node-dot {
+  transform: scale(1.12);
+}
+
+.timeline-node-label {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92px;
+  text-align: center;
+  font-size: var(--fs-2xs);
+  color: var(--text-secondary);
+  line-height: 1.25;
+}
+.timeline-node:nth-child(odd) .timeline-node-label { bottom: calc(100% + 10px); }
+.timeline-node:nth-child(even) .timeline-node-label { top: calc(100% + 10px); }
+
+.timeline-node-tip {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 9px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 20;
+}
+.timeline-node:nth-child(odd) .timeline-node-tip { top: calc(100% + 10px); }
+.timeline-node:nth-child(even) .timeline-node-tip { bottom: calc(100% + 10px); }
+.timeline-node:hover .timeline-node-tip,
+.timeline-node:focus-visible .timeline-node-tip {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------------
+   Guided Mode - one topic at a time instead of the full grid/timeline, for
+   anyone who finds all 28 topics at once overwhelming. Nothing is locked;
+   it's a suggested path with a stated reason, not a gate.
+   --------------------------------------------------------------------- */
+.roadmap-guided { margin-top: 28px; }
+
+.guided-card {
+  max-width: 560px;
+  margin: 0 auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--cat);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  text-align: center;
+}
+
+.guided-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.guided-step {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.guided-card h2 { font-size: var(--fs-h2); margin: 0 0 6px; }
+
+.guided-complete-badge {
+  margin: 0 0 6px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--viz-sorted);
+}
+
+.guided-why {
+  color: var(--text-secondary);
+  font-family: var(--sans);
+  line-height: 1.6;
+  margin: 14px 0 26px;
+}
+
+.guided-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.guided-nav-btn { flex-shrink: 0; }
+.guided-nav-btn:disabled { opacity: 0.4; cursor: default; }
+.guided-start {
+  flex: 1;
+  text-align: center;
+  text-decoration: none;
+}
+
+.guided-continue {
+  margin-top: 32px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+/* [hidden] and .guided-continue are equal specificity - without this,
+   author display:flex silently wins the cascade tie over the UA [hidden]
+   rule and the element renders as an empty box even while "hidden". */
+.guided-continue[hidden] { display: none; }
+.guided-continue-label {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.guided-continue a {
+  font-weight: 600;
+  text-decoration: none;
 }
 
 .roadmap-card {
@@ -411,9 +894,23 @@ a { color: var(--accent); }
   padding: 16px;
 }
 
-.roadmap-card h2 { font-size: 1rem; margin-top: 0; display: flex; align-items: center; gap: 6px; }
+/* Scroll-reveal starting/end state - see scroll_reveal.js. `.roadmap-card`
+   itself carries no hidden state; `.reveal-init` is only ever added by the
+   script once it's confirmed running, so a JS failure leaves cards in their
+   normal visible default rather than permanently hidden. */
+.roadmap-card.reveal-init {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.roadmap-card.reveal-init.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.roadmap-card h2 { font-size: var(--fs-lg); margin-top: 0; display: flex; align-items: center; gap: 6px; }
 .roadmap-card-emoji { font-size: 1.1rem; }
-.roadmap-card-progress { margin-left: auto; font-size: 0.7rem; font-weight: 400; color: var(--muted); }
+.roadmap-card-progress { margin-left: auto; font-size: var(--fs-2xs); font-weight: 400; color: var(--muted); }
 .roadmap-card ul { list-style: none; margin: 0; padding: 0; }
 .roadmap-card li { margin-bottom: 6px; }
 .roadmap-card a { text-decoration: none; color: var(--text-secondary); }
@@ -437,7 +934,7 @@ a { color: var(--accent); }
 .eli5-text { flex: 1; min-width: 220px; }
 .eli5-text h2 {
   margin: 0 0 8px;
-  font-size: 0.82rem;
+  font-size: var(--fs-md);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -463,7 +960,7 @@ a { color: var(--accent); }
 .complexity-table {
   border-collapse: collapse;
   width: 100%;
-  font-size: 0.9rem;
+  font-size: var(--fs-md);
 }
 .complexity-table th, .complexity-table td {
   border: 1px solid var(--gridline);
@@ -487,7 +984,7 @@ a { color: var(--accent); }
   margin-bottom: 14px;
 }
 .visualizer-label {
-  font-size: 0.78rem;
+  font-size: var(--fs-sm);
   color: var(--muted);
 }
 
@@ -576,7 +1073,7 @@ canvas#stage {
 }
 
 .list-node-label {
-  font-size: 0.72rem;
+  font-size: var(--fs-xs);
   color: var(--muted);
   min-height: 14px;
   white-space: nowrap;
@@ -612,7 +1109,7 @@ canvas#stage {
 .list-node-box-small {
   width: 34px;
   height: 34px;
-  font-size: 0.8rem;
+  font-size: var(--fs-md);
 }
 
 .hash-stage {
@@ -636,7 +1133,7 @@ canvas#stage {
 .hash-bucket-label {
   width: 34px;
   flex-shrink: 0;
-  font-size: 0.8rem;
+  font-size: var(--fs-md);
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
@@ -693,13 +1190,13 @@ canvas#stage {
   align-items: center;
   gap: 6px;
   color: var(--text-secondary);
-  font-size: 0.85rem;
+  font-size: var(--fs-md);
 }
 
 .player-scrub input[type="range"] { width: 200px; }
 
 .key-hints {
-  font-size: 0.7rem;
+  font-size: var(--fs-xs);
   color: var(--muted);
   margin-top: 6px;
 }
@@ -720,12 +1217,12 @@ canvas#stage {
 .player-note {
   color: var(--text-secondary);
   min-height: 1.2em;
-  font-size: 0.88rem;
+  font-size: var(--fs-lg);
 }
 
 .player-counters {
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: var(--fs-md);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -746,7 +1243,7 @@ canvas#stage {
 .predict-toggle.active { background: var(--cat); color: var(--fill-ink); }
 
 .predict-score {
-  font-size: 0.85rem;
+  font-size: var(--fs-md);
   font-weight: 600;
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
@@ -765,7 +1262,7 @@ canvas#stage {
 .predict-question {
   margin: 0 0 12px;
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: var(--fs-lg);
   color: var(--text-primary);
 }
 
@@ -803,7 +1300,7 @@ canvas#stage {
 
 .dp-table {
   border-collapse: collapse;
-  font-size: 0.8rem;
+  font-size: var(--fs-md);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1141,7 +1638,8 @@ canvas#stage {
     border-radius: 1px;
   }
 
-  .mobile-search-trigger {
+  .mobile-search-trigger,
+  .mobile-onboarding-trigger {
     width: 44px;
     height: 44px;
     background: none;
@@ -1149,6 +1647,11 @@ canvas#stage {
     border-radius: var(--radius);
     font-size: 1rem;
     cursor: pointer;
+  }
+  .mobile-onboarding-trigger {
+    font-family: var(--mono);
+    font-weight: 700;
+    color: var(--muted);
   }
 
   .sidebar-backdrop {
@@ -1204,6 +1707,44 @@ canvas#stage {
   }
 
   .roadmap-grid { grid-template-columns: 1fr; }
+
+  .guided-card { padding: 22px 18px; }
+  .guided-actions { flex-direction: column; align-items: stretch; }
+  .guided-nav-btn, .guided-start { width: 100%; }
+  .guided-actions > .guided-start { order: -1; }
+
+  /* Timeline switches from a horizontal subway-map to a vertical one - the
+     above/below label alternation only makes sense with horizontal room to
+     spare, and a touch device has no hover to reveal the tip anyway. */
+  .timeline-track {
+    flex-direction: column;
+    align-items: flex-start;
+    height: auto;
+    gap: 26px;
+    padding: 10px 0 10px 32px;
+  }
+  .timeline-track::before {
+    left: 14px;
+    right: auto;
+    top: 14px;
+    bottom: 14px;
+    width: 2px;
+    height: auto;
+  }
+  .timeline-node {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+  .timeline-node-label {
+    position: static;
+    transform: none;
+    width: auto;
+    text-align: left;
+  }
+  .timeline-node-tip { display: none; }
 
   .input-panel { flex-direction: column; align-items: stretch; }
   .input-panel input, .input-panel .target-field, .input-panel .k-field { width: 100%; }

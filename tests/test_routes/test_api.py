@@ -60,6 +60,15 @@ def test_no_topic_is_left_as_a_coming_soon_placeholder():
     assert coming_soon == []
 
 
+def test_every_topic_has_guided_mode_reasoning():
+    # Guided Mode's "why this topic, why now" copy comes from topics.yaml's
+    # `why` field - a topic silently missing it would show a blank reason
+    # instead of failing loudly, so this guards against that at load time.
+    _, by_slug = load_roadmap()
+    missing = [t.slug for t in by_slug.values() if not t.why.strip()]
+    assert missing == []
+
+
 def test_home_page_and_nav_show_no_soon_badges():
     # Regression: the nav/home "soon" badge must key off is_coming_soon, not
     # `not is_built` - a content_only topic (Big-O) isn't built either, but
@@ -122,7 +131,11 @@ def test_home_page_category_progress_grouping_matches_category_topic_counts():
     categories, _ = load_roadmap()
     for i, category in enumerate(categories):
         cat_id = f"cat-{i}"
-        assert response.text.count(f'data-progress-category="{cat_id}"') == 1
+        # Two legitimate readers per category: the card grid's progress badge
+        # and the timeline view's hover tip - both render server-side on the
+        # same page (see index.html), and progress.js updates each
+        # independently, so 2 is the correct count, not a duplication bug.
+        assert response.text.count(f'data-progress-category="{cat_id}"') == 2
         assert response.text.count(f'data-progress-category-of="{cat_id}"') == len(category.topics)
 
 

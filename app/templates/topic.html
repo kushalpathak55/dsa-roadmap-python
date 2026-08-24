@@ -20,7 +20,7 @@
 
   {% if topic.family in ("array", "tree", "graph", "dp", "list", "hash") %}
     <div class="predict-bar">
-      <button id="predict-toggle" type="button" class="predict-toggle">🎮 Predict Mode: Off</button>
+      <button id="predict-toggle" type="button" class="predict-toggle" data-tooltip="Guess the next step before it happens">🎮 Predict Mode: Off</button>
       <span id="predict-score" class="predict-score"></span>
     </div>
   {% endif %}
@@ -162,4 +162,6 @@
   {% include "partials/_complexity_table.html" %}
 </section>
 {% endif %}
+
+<div class="guided-continue" id="guided-continue" hidden></div>
 {% endblock %}

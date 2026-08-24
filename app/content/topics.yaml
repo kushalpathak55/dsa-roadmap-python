@@ -5,11 +5,14 @@
 # algo_key must match a key in app/algorithms/registry.py ALGORITHMS when status: built.
 # family selects which JS renderer the topic page mounts: array (Canvas bars) or list (DOM boxes).
 # motion selects the decorative CSS analogy animation next to the ELI5 box (see partials/_motion.html).
+# why is a one-sentence "why this topic, why now" used by Guided Mode - real
+#   prerequisite reasoning grounded in what the topic builds on, not filler.
 
 - slug: big-o
   category: Foundations
   title: "Big-O Notation"
   order: 1
+  why: "Foundational vocabulary for time/space complexity, used to describe and compare every algorithm that follows - nothing else can be discussed precisely without it."
   status: content_only
   motion: growth
   markdown: big_o.md
@@ -18,6 +21,7 @@
   category: Arrays & Searching
   title: "Linear Search"
   order: 1
+  why: "The simplest possible search - establishes the baseline O(n) every smarter search gets compared against."
   status: built
   algo_key: linear_search
   family: array
@@ -28,6 +32,7 @@
   category: Arrays & Searching
   title: "Binary Search"
   order: 2
+  why: "Builds directly on Linear Search by adding one constraint (a sorted array) to drop from O(n) to O(log n) - the first lesson in trading a precondition for speed."
   status: built
   algo_key: binary_search
   family: array
@@ -38,6 +43,7 @@
   category: Array Techniques
   title: "Two Pointers"
   order: 1
+  why: "Reuses the sorted-array intuition from Binary Search to solve a different shape of problem (pair-finding) in one pass instead of nested loops."
   status: built
   algo_key: two_pointer_sum
   family: array
@@ -48,6 +54,7 @@
   category: Array Techniques
   title: "Sliding Window"
   order: 2
+  why: "A natural extension of Two Pointers - a whole window slides across the array instead of two independent pointers, once that pointer intuition is comfortable."
   status: built
   algo_key: sliding_window_max_sum
   family: array
@@ -58,6 +65,7 @@
   category: Sorting
   title: "Bubble Sort"
   order: 1
+  why: "The most literal possible sorting algorithm - repeatedly comparing neighbors - so it is the clearest place to first watch comparisons and swaps happen step by step."
   status: built
   algo_key: bubble_sort
   family: array
@@ -68,6 +76,7 @@
   category: Sorting
   title: "Selection Sort"
   order: 2
+  why: "Same O(n^2) cost as Bubble Sort but a different strategy (find-the-minimum) - useful for contrasting two ways to arrive at the same complexity class."
   status: built
   algo_key: selection_sort
   family: array
@@ -78,6 +87,7 @@
   category: Sorting
   title: "Insertion Sort"
   order: 3
+  why: "The last of the three simple O(n^2) sorts, and the one whose real-world intuition (sorting a hand of cards) is most direct - a bridge before the faster, divide-and-conquer sorts."
   status: built
   algo_key: insertion_sort
   family: array
@@ -88,6 +98,7 @@
   category: Sorting
   title: "Merge Sort"
   order: 4
+  why: "The first divide-and-conquer algorithm in the roadmap - introduces recursion-driven splitting, a pattern reused constantly later (trees, DP)."
   status: built
   algo_key: merge_sort
   family: array
@@ -98,6 +109,7 @@
   category: Sorting
   title: "Quick Sort"
   order: 5
+  why: "Same divide-and-conquer shape as Merge Sort, but partitions in place - comparing the two directly is the clearest way to understand guaranteed vs. average-case performance."
   status: built
   algo_key: quick_sort
   family: array
@@ -108,6 +120,7 @@
   category: Sorting
   title: "Heap Sort"
   order: 6
+  why: "Closes out sorting by introducing the heap data structure (covered properly later) through a use case you already understand, before it is used for anything new."
   status: built
   algo_key: heap_sort
   family: array
@@ -118,6 +131,7 @@
   category: Linked Lists
   title: "Singly Linked List"
   order: 1
+  why: "The first data structure built from nodes and pointers rather than a flat array - a mental model every tree and graph later depends on."
   status: built
   algo_key: linked_list_demo
   family: list
@@ -128,6 +142,7 @@
   category: Stacks & Queues
   title: "Stack"
   order: 1
+  why: "The simplest possible constraint on top of a list (only touch one end) - small enough to fully internalize before Queue changes which end."
   status: built
   algo_key: stack_demo
   family: list
@@ -138,6 +153,7 @@
   category: Stacks & Queues
   title: "Queue"
   order: 2
+  why: "The mirror image of Stack - same interface, opposite access rule - best learned right after Stack while the comparison is fresh."
   status: built
   algo_key: queue_demo
   family: list
@@ -148,6 +164,7 @@
   category: Hashing
   title: "Hash Table (Chaining)"
   order: 1
+  why: "Introduces near-O(1) lookup by trading the ordered structure of everything so far for raw speed - its collision handling reuses the linked-list chains from two topics ago."
   status: built
   algo_key: hash_table_demo
   family: hash
@@ -158,6 +175,7 @@
   category: Trees
   title: "Binary Search Tree"
   order: 1
+  why: "The first branching (non-linear) data structure - keeps the sorted intuition from Binary Search, but in a shape that supports fast insertion and deletion too."
   status: built
   algo_key: bst_ops
   family: tree
@@ -168,6 +186,7 @@
   category: Trees
   title: "Tree Traversals"
   order: 2
+  why: "Once a tree exists, the next question is how to visit every node in it - vocabulary every later tree and graph algorithm assumes you already have."
   status: built
   algo_key: tree_traversal_demo
   family: tree
@@ -178,6 +197,7 @@
   category: Trees
   title: "Trie (Prefix Tree)"
   order: 3
+  why: "A specialized tree shaped around shared prefixes - lands best once general tree traversal is already second nature."
   status: built
   algo_key: trie_demo
   family: tree
@@ -188,6 +208,7 @@
   category: Trees
   title: "Union-Find (Disjoint Set)"
   order: 4
+  why: "A different tree-shaped structure, optimized for are-these-two-things-connected - a question that shows up constantly once graphs are introduced next."
   status: built
   algo_key: union_find_demo
   family: tree
@@ -198,6 +219,7 @@
   category: Heaps
   title: "Binary Heap"
   order: 1
+  why: "Revisits the tree shape from three topics ago, reorganized around one rule (parent always smaller/larger) that makes finding the min or max instant."
   status: built
   algo_key: binary_heap_demo
   family: tree
@@ -208,6 +230,7 @@
   category: Graphs
   title: "Breadth-First Search"
   order: 1
+  why: "The first graph algorithm - and it reuses the Queue from Stacks & Queues directly, so that structure purpose finally clicks into place."
   status: built
   algo_key: bfs_demo
   family: graph
@@ -218,6 +241,7 @@
   category: Graphs
   title: "Depth-First Search"
   order: 2
+  why: "The natural counterpart to BFS - same graph, opposite exploration strategy - best contrasted immediately after BFS while its behavior is fresh."
   status: built
   algo_key: dfs_demo
   family: graph
@@ -228,6 +252,7 @@
   category: Graphs
   title: "Dijkstra's Algorithm"
   order: 3
+  why: "Takes BFS's shortest-path idea and generalizes it to weighted edges, using the Binary Heap from the previous category to always expand the cheapest option first."
   status: built
   algo_key: dijkstra_demo
   family: graph
@@ -238,6 +263,7 @@
   category: Graphs
   title: "Topological Sort"
   order: 4
+  why: "Closes out graphs by reusing BFS traversal mechanics for a different question - not how far, but in what order."
   status: built
   algo_key: topological_sort_demo
   family: graph
@@ -248,6 +274,7 @@
   category: Dynamic Programming
   title: "Fibonacci (Memoization)"
   order: 1
+  why: "The smallest example of the core DP idea - cache a subproblem answer instead of recomputing it - using a recurrence simple enough to trust before harder problems."
   status: built
   algo_key: fibonacci_memo
   family: dp
@@ -258,6 +285,7 @@
   category: Dynamic Programming
   title: "0/1 Knapsack"
   order: 2
+  why: "The same caching idea as Fibonacci, but the subproblems now form a 2D grid instead of a line - the standard next step once 1D memoization feels natural."
   status: built
   algo_key: knapsack
   family: dp
@@ -268,6 +296,7 @@
   category: Dynamic Programming
   title: "Longest Common Subsequence"
   order: 3
+  why: "Another 2D DP grid like Knapsack, but the dependency between cells is diagonal instead of directly above - a deliberately different wiring to stress-test the same model."
   status: built
   algo_key: lcs
   family: dp
@@ -278,6 +307,7 @@
   category: Backtracking
   title: "N-Queens"
   order: 1
+  why: "Closes the roadmap with backtracking - explore, hit a dead end, undo, try again - a problem-solving pattern that does not fit neatly into anything covered so far."
   status: built
   algo_key: n_queens
   family: dp

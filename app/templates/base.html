@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{% block title %}DSA Roadmap{% endblock %}</title>
 
+  <script>
+    // Apply a persisted explicit light/dark choice before first paint. Every
+    // page needs this, not just the homepage - the toggle lives in the
+    // sidebar, which is present everywhere - see theme.js for the toggle
+    // itself and style.css's [data-theme] blocks for the actual palette.
+    (function () {
+      try {
+        var saved = localStorage.getItem('dsa-theme');
+        if (saved === 'light' || saved === 'dark') {
+          document.documentElement.dataset.theme = saved;
+        }
+      } catch (e) { /* localStorage unavailable - falls back to prefers-color-scheme */ }
+    })();
+  </script>
   <meta name="theme-color" content="#10141c">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -27,6 +41,33 @@
       <div class="cmdk-empty" id="cmdk-empty" hidden role="status">No topics match.</div>
     </div>
   </div>
+  <div class="onboarding-overlay" id="onboarding-overlay" hidden>
+    <div class="onboarding-dialog" role="dialog" aria-modal="true" aria-label="Quick tour">
+      <div class="onboarding-step" data-step="0">
+        <h2 tabindex="-1">Jump to any topic</h2>
+        <p>Press <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>&#8984;K</kbd> on Mac) anywhere to search all 28 topics instantly.</p>
+      </div>
+      <div class="onboarding-step" data-step="1" hidden>
+        <h2 tabindex="-1">Predict before you see it</h2>
+        <p>On a topic page, flip on <strong>Predict Mode</strong> to guess the next step before it plays - a fast way to check you actually understand the algorithm.</p>
+      </div>
+      <div class="onboarding-step" data-step="2" hidden>
+        <h2 tabindex="-1">Keyboard-first controls</h2>
+        <p>While a visualization is running: <kbd>Space</kbd> play/pause, <kbd>&larr;</kbd>/<kbd>&rarr;</kbd> step, <kbd>Home</kbd> reset.</p>
+      </div>
+      <div class="onboarding-footer">
+        <div class="onboarding-dots" aria-hidden="true">
+          <span class="onboarding-dot active"></span>
+          <span class="onboarding-dot"></span>
+          <span class="onboarding-dot"></span>
+        </div>
+        <div class="onboarding-actions">
+          <button type="button" id="onboarding-skip" class="onboarding-skip">Skip</button>
+          <button type="button" id="onboarding-next" class="btn-primary">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="mobile-topbar">
     <button type="button" id="sidebar-toggle" class="sidebar-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Open menu">
       <span class="sidebar-toggle-bar"></span>
@@ -34,6 +75,7 @@
       <span class="sidebar-toggle-bar"></span>
     </button>
     <a class="brand" href="/">DSA Roadmap</a>
+    <button type="button" id="mobile-onboarding-trigger" class="mobile-onboarding-trigger" aria-haspopup="dialog" aria-label="Show quick tour">?</button>
     <button type="button" id="mobile-search-trigger" class="mobile-search-trigger" aria-label="Jump to a topic">🔍</button>
   </div>
   <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
@@ -41,12 +83,18 @@
     <nav class="sidebar" id="sidebar" aria-label="Roadmap">
       <div class="sidebar-header">
         <a class="brand" href="/">DSA Roadmap</a>
+        <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Switch to light theme" aria-pressed="false">
+          <span aria-hidden="true">&#127769;</span>
+        </button>
         <button type="button" id="sidebar-close" class="sidebar-close" aria-label="Close menu">&times;</button>
       </div>
-      <button type="button" id="cmdk-trigger" class="cmdk-trigger" aria-haspopup="dialog">
-        <span>jump to...</span>
-        <span class="cmdk-trigger-key">Ctrl K</span>
-      </button>
+      <div class="cmdk-row">
+        <button type="button" id="cmdk-trigger" class="cmdk-trigger" aria-haspopup="dialog" data-tooltip="Jump to any topic instantly">
+          <span>jump to...</span>
+          <span class="cmdk-trigger-key">Ctrl K</span>
+        </button>
+        <button type="button" id="onboarding-trigger" class="onboarding-trigger" aria-haspopup="dialog" aria-label="Show quick tour">?</button>
+      </div>
       <div class="progress-summary" id="progress-summary" role="status"></div>
       {% for category in nav_categories %}
         <div class="nav-category" style="--cat: var(--cat-{{ category.slot }});">
@@ -54,7 +102,7 @@
           <ul class="nav-topics">
             {% for topic in category.topics %}
               <li>
-                <a href="/topic/{{ topic.slug }}" data-progress-slug="{{ topic.slug }}"
+                <a href="/topic/{{ topic.slug }}" data-progress-slug="{{ topic.slug }}" data-guided-reason="{{ topic.why }}"
                    class="nav-topic {% if topic.slug == current_slug %}active{% endif %} {% if topic.is_coming_soon %}coming-soon{% endif %}"
                    {% if topic.slug == current_slug %}aria-current="page"{% endif %}>
                   {{ topic.title }}
@@ -72,8 +120,11 @@
       {% block content %}{% endblock %}
     </main>
   </div>
+  <script src="{{ url_for('static', path='js/core/theme.js') }}"></script>
   <script src="{{ url_for('static', path='js/core/progress.js') }}"></script>
   <script src="{{ url_for('static', path='js/core/command_palette.js') }}"></script>
   <script src="{{ url_for('static', path='js/core/sidebar.js') }}"></script>
+  <script src="{{ url_for('static', path='js/core/onboarding.js') }}"></script>
+  <script src="{{ url_for('static', path='js/core/roadmap_view.js') }}"></script>
 </body>
 </html>

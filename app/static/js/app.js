@@ -165,6 +165,13 @@
   window.addEventListener('orientationchange', () => {
     if (currentRenderer) currentRenderer.handleResize();
   });
+  // Canvas/SVG colors are read live via getComputedStyle on every render,
+  // but a Canvas's painted pixels won't update on their own when the CSS
+  // variables change under a theme toggle - ask the active renderer to
+  // repaint, same hook used for resize/orientationchange above.
+  window.addEventListener('dsa-theme-change', () => {
+    if (currentRenderer) currentRenderer.handleResize();
+  });
 
   async function runAlgorithm() {
     let payload;
