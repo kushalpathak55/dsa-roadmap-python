@@ -1,7 +1,7 @@
 /* A short, text-only first-run tour. Auto-shows once on the homepage (never
  * on a deep-linked topic page, so a first-time visitor isn't interrupted
  * before they can read anything) and can be reopened anytime via the "?"
- * buttons in the sidebar and mobile topbar.
+ * button in the topbar (homepage and topic page both have one).
  */
 (function () {
   const overlay = document.getElementById('onboarding-overlay');
@@ -104,10 +104,9 @@
     }
   });
 
-  [document.getElementById('onboarding-trigger'), document.getElementById('mobile-onboarding-trigger')]
-    .filter(Boolean)
-    .forEach((btn) => btn.addEventListener('click', open));
+  const trigger = document.getElementById('onboarding-trigger');
+  if (trigger) trigger.addEventListener('click', open);
 
-  const isHomepage = !!document.querySelector('.roadmap-grid');
+  const isHomepage = document.body.classList.contains('graph-page');
   if (isHomepage && !hasSeenTour()) open();
 })();

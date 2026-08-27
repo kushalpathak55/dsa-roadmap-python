@@ -32,20 +32,21 @@
     return completed.has(slug);
   }
 
-  // `data-progress-category`/`data-progress-category-of` (used for the
-  // homepage badge counts) only exist on the homepage's card grid/timeline -
-  // markComplete() fires from a topic page instead, where neither attribute
-  // exists at all. Group by the sidebar's `.nav-category` DOM nesting
-  // instead, since the sidebar (and its category grouping) renders on every
-  // page. The loop index is only ever compared against itself within one
-  // markComplete() call, so it doesn't need to match any server-side id.
+  // Groups every `[data-progress-slug]` element on the page by its
+  // `data-category` attribute (present on the hidden topic-data block in
+  // base.html, which renders on every page) rather than DOM nesting - there
+  // is no persistent per-category container in this layout anymore.
   function fullyCompletedCategories() {
+    const byCategory = new Map();
+    document.querySelectorAll('[data-progress-slug]').forEach((el) => {
+      const cat = el.dataset.category;
+      if (!cat) return;
+      if (!byCategory.has(cat)) byCategory.set(cat, []);
+      byCategory.get(cat).push(el.dataset.progressSlug);
+    });
     const result = new Set();
-    document.querySelectorAll('.nav-category').forEach((catEl, index) => {
-      const items = catEl.querySelectorAll('[data-progress-slug]');
-      if (items.length && [...items].every((el) => completed.has(el.dataset.progressSlug))) {
-        result.add(index);
-      }
+    byCategory.forEach((slugs, cat) => {
+      if (slugs.length && slugs.every((slug) => completed.has(slug))) result.add(cat);
     });
     return result;
   }

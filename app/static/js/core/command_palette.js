@@ -15,17 +15,23 @@
   const triggerKey = document.querySelector('.cmdk-trigger-key');
   if (triggerKey) triggerKey.textContent = isMac ? '⌘K' : 'Ctrl K';
 
+  // The sr-only " - completed" span is hidden via the `hidden` attribute
+  // (toggled by progress.js), which doesn't remove it from .textContent -
+  // strip it before reading the title, or a completed topic's search result
+  // would read "Bubble Sort - completed" regardless of relevance.
+  function titleOf(el) {
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll('.sr-only').forEach((n) => n.remove());
+    return clone.textContent.trim().replace(/\s+/g, ' ');
+  }
+
   function buildIndex() {
-    return [...document.querySelectorAll('.nav-topic[data-progress-slug]')].map((el) => {
-      const categoryEl = el.closest('.nav-category');
-      const categoryNameEl = categoryEl && categoryEl.querySelector('.nav-category-name');
-      return {
-        slug: el.dataset.progressSlug,
-        title: el.textContent.trim().replace(/\s+/g, ' '),
-        category: categoryNameEl ? categoryNameEl.textContent.trim().replace(/\s+/g, ' ') : '',
-        href: el.getAttribute('href'),
-      };
-    });
+    return [...document.querySelectorAll('.nav-topic[data-progress-slug]')].map((el) => ({
+      slug: el.dataset.progressSlug,
+      title: titleOf(el),
+      category: el.dataset.category || '',
+      href: el.getAttribute('href'),
+    }));
   }
 
   const index = buildIndex();

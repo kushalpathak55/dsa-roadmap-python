@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import functools
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -10,36 +11,86 @@ import frontmatter
 import markdown as markdown_lib
 import yaml
 
+# codehilite always emits exactly `<div class="codehilite"><pre>...</pre></div>`
+# with no nested divs inside, so a non-greedy match to the first following
+# </div> reliably captures one block at a time even when a topic has several -
+# wrapping each one with a header bar (dots + working copy button) here, once,
+# is simpler than templating it per-block since explanation_html is a single
+# blob of prose and code mixed together, not a list Jinja can iterate.
+_CODEHILITE_RE = re.compile(r'<div class="codehilite">.*?</div>', re.DOTALL)
+_CODE_CARD_HEADER = (
+    '<div class="code-card"><div class="code-top">'
+    '<div class="code-dots"><span></span><span></span><span></span></div>'
+    '<button type="button" class="copy-btn">Copy</button>'
+    '</div>'
+)
+
+
+def _wrap_code_blocks(html: str) -> str:
+    return _CODEHILITE_RE.sub(lambda m: f"{_CODE_CARD_HEADER}{m.group(0)}</div>", html)
+
 CONTENT_DIR = Path(__file__).parent
 TOPICS_YAML = CONTENT_DIR / "topics.yaml"
 
-# Bright, playful accent per category. `slot` selects a CSS custom property
-# (--cat-1..--cat-8, defined in style.css) rather than a raw hex, so light/dark
-# mode and future palette tweaks stay in one place. Only 8 slots exist for 12
-# categories, so the lowest-collision-risk categories (farthest apart in the
-# nav) reuse a slot - identity is always carried by the label + emoji too,
-# never by color alone.
+# Category is a text label only now - color carries no category information
+# (see style.css's design-tokens comment: complexity is the one consistent
+# color language). Emoji is still used as a small icon next to the label.
 CATEGORY_META: dict[str, dict[str, str]] = {
-    "Foundations": {"emoji": "📐", "slot": "1"},
-    "Arrays & Searching": {"emoji": "🔍", "slot": "2"},
-    "Array Techniques": {"emoji": "↔️", "slot": "6"},
-    "Sorting": {"emoji": "🔀", "slot": "3"},
-    "Linked Lists": {"emoji": "🔗", "slot": "4"},
-    "Stacks & Queues": {"emoji": "🥞", "slot": "5"},
-    "Hashing": {"emoji": "🗂️", "slot": "6"},
-    "Trees": {"emoji": "🌳", "slot": "7"},
-    "Heaps": {"emoji": "⛰️", "slot": "8"},
-    "Graphs": {"emoji": "🕸️", "slot": "1"},
-    "Dynamic Programming": {"emoji": "🧩", "slot": "2"},
-    "Backtracking": {"emoji": "♛", "slot": "4"},
+    "Foundations": {"emoji": "📐"},
+    "Arrays & Searching": {"emoji": "🔍"},
+    "Array Techniques": {"emoji": "↔️"},
+    "Sorting": {"emoji": "🔀"},
+    "Linked Lists": {"emoji": "🔗"},
+    "Stacks & Queues": {"emoji": "🥞"},
+    "Hashing": {"emoji": "🗂️"},
+    "Trees": {"emoji": "🌳"},
+    "Heaps": {"emoji": "⛰️"},
+    "Graphs": {"emoji": "🕸️"},
+    "Dynamic Programming": {"emoji": "🧩"},
+    "Backtracking": {"emoji": "♛"},
 }
-DEFAULT_CATEGORY_META = {"emoji": "✨", "slot": "1"}
+DEFAULT_CATEGORY_META = {"emoji": "✨"}
 
 
 def _path_slug(name: str) -> str:
     # e.g. "Arrays & Searching" -> "arrays_searching" - for the file-path-style
     # breadcrumb on a topic page (see topic.html).
     return "_".join(name.replace("&", "").split()).lower()
+
+
+def complexity_bucket_for(raw: str) -> str:
+    """Maps a single complexity string (e.g. "O(n log n)") to one of the 7
+    buckets that drive this app's single color language (style.css's --c-*
+    tokens). Used both for a topic's overall bucket (via time_avg) and,
+    independently, for each cell of the per-topic complexity table - a
+    O(1)-best/O(n)-worst row gets two different chip colors, not one color
+    restated four times. Verified against every distinct complexity string
+    actually used across app/content/*.md, not guessed."""
+    s = (raw or "").strip()
+    if s in ("", "-"):
+        return "root"
+    n = s.lower().replace(" ", "")
+    if "!" in n or "2^" in n:
+        return "exp"
+    if "^2" in n or n in ("o(n*w)", "o(n*m)"):
+        return "n2"
+    if "log" in n and ("+e)" in n or "n*log" in n or "nlog" in n):
+        return "nlogn"
+    if "log" in n:
+        return "logn"
+    if n == "o(1)" or "α" in s.lower() or "alpha" in n:
+        return "1"
+    return "n"
+
+
+def _complexity_bucket(status: str, complexity: "Complexity") -> str:
+    """A topic's overall complexity bucket, from its typical (time_avg) cost -
+    the one color that carries through its badge/nav/viz everywhere else on
+    its page. content_only topics (a concept, not a complexity class, e.g.
+    Big-O Notation itself) always bucket as "root"."""
+    if status == "content_only":
+        return "root"
+    return complexity_bucket_for(complexity.time_avg)
 
 
 @dataclass
@@ -61,6 +112,7 @@ class Topic:
     status: str  # "built" | "content_only" | "coming_soon"
     markdown: str
     why: str = ""
+    requires: list[str] = field(default_factory=list)
     algo_key: str | None = None
     family: str | None = None
     motion: str | None = None
@@ -96,12 +148,12 @@ class Topic:
         return CATEGORY_META.get(self.category, DEFAULT_CATEGORY_META)["emoji"]
 
     @property
-    def category_slot(self) -> str:
-        return CATEGORY_META.get(self.category, DEFAULT_CATEGORY_META)["slot"]
-
-    @property
     def category_path(self) -> str:
         return _path_slug(self.category)
+
+    @property
+    def complexity_bucket(self) -> str:
+        return _complexity_bucket(self.status, self.complexity)
 
 
 @dataclass
@@ -113,10 +165,6 @@ class Category:
     def emoji(self) -> str:
         return CATEGORY_META.get(self.name, DEFAULT_CATEGORY_META)["emoji"]
 
-    @property
-    def slot(self) -> str:
-        return CATEGORY_META.get(self.name, DEFAULT_CATEGORY_META)["slot"]
-
 
 def _load_topic_content(topic_meta: dict) -> Topic:
     md_path = CONTENT_DIR / topic_meta["markdown"]
@@ -126,7 +174,13 @@ def _load_topic_content(topic_meta: dict) -> Topic:
 
     if md_path.exists():
         post = frontmatter.load(md_path)
-        body_html = markdown_lib.markdown(post.content, extensions=["fenced_code", "tables"])
+        body_html = _wrap_code_blocks(
+            markdown_lib.markdown(
+                post.content,
+                extensions=["fenced_code", "codehilite", "tables"],
+                extension_configs={"codehilite": {"guess_lang": False}},
+            )
+        )
         complexity_data = post.metadata.get("complexity", {})
         complexity = Complexity(**complexity_data)
         eli5_source = post.metadata.get("eli5", "")
@@ -141,6 +195,7 @@ def _load_topic_content(topic_meta: dict) -> Topic:
         status=topic_meta.get("status", "coming_soon"),
         markdown=topic_meta["markdown"],
         why=topic_meta.get("why", ""),
+        requires=topic_meta.get("requires", []) or [],
         algo_key=topic_meta.get("algo_key"),
         family=topic_meta.get("family"),
         motion=topic_meta.get("motion"),
@@ -172,3 +227,24 @@ def load_roadmap() -> tuple[list[Category], dict[str, Topic]]:
 def get_topic(slug: str) -> Topic | None:
     _, by_slug = load_roadmap()
     return by_slug.get(slug)
+
+
+def get_prev_next(topic: Topic) -> tuple[Topic | None, Topic | None]:
+    """The mini-map strip and path-nav cards on a topic page show one step
+    back and one step forward along the prerequisite DAG - not a flat
+    previous/next by list order (that stopped meaning anything once the
+    homepage became a graph, not a scrollable list). "prev" is the topic's
+    own first prerequisite; "next" is the first topic (in category/order
+    sequence) that lists this one as a prerequisite. Either can be None (the
+    root has no prev, a leaf has no next)."""
+    categories, by_slug = load_roadmap()
+    prev_topic = by_slug.get(topic.requires[0]) if topic.requires else None
+    next_topic = None
+    for category in categories:
+        for candidate in category.topics:
+            if topic.slug in candidate.requires:
+                next_topic = candidate
+                break
+        if next_topic:
+            break
+    return prev_topic, next_topic

@@ -3,89 +3,87 @@
 {% block title %}DSA Roadmap — Learn Data Structures & Algorithms{% endblock %}
 
 {% block content %}
-<script>
-  // Read the persisted Cards/Timeline choice and stamp it onto <html> before
-  // the roadmap sections below are parsed, so the correct view is visible on
-  // first paint with no flash of the other one. Must run before those
-  // sections in DOM order - see style.css's [data-view] rules.
-  (function () {
-    try {
-      var v = localStorage.getItem('dsa-roadmap-view');
-      if (v === 'timeline' || v === 'guided') {
-        document.documentElement.dataset.view = v;
-      }
-    } catch (e) { /* localStorage unavailable - default to Cards */ }
-  })();
-</script>
-<header class="page-header">
-  <h1>DSA Roadmap</h1>
-  <p class="subtitle">Learn data structures and algorithms through interactive, step-by-step visualizations.</p>
-</header>
+<div class="app">
+  <header class="topbar-map">
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>DSA Roadmap</a>
 
-<div class="progress-bar-wrap">
-  <div class="progress-bar-track"><div class="progress-bar-fill"></div></div>
-  <span class="progress-bar-label"></span>
+    <div class="view-tabs" role="group" aria-label="Roadmap view">
+      <button type="button" id="tab-map" class="active" aria-pressed="true">Map</button>
+      <button type="button" id="tab-list" aria-pressed="false">List</button>
+    </div>
+
+    <div class="search-wrap">
+      <input id="graph-search" type="text" placeholder="Filter topics&hellip; (try &quot;sort&quot; or &quot;graph&quot;)" autocomplete="off" aria-label="Filter topics">
+    </div>
+
+    <div class="legend" id="legend" role="group" aria-label="Filter by complexity">
+      <button type="button" data-complexity="1"><span class="dot" style="background:var(--c-1)"></span>O(1)</button>
+      <button type="button" data-complexity="logn"><span class="dot" style="background:var(--c-logn)"></span>O(log n)</button>
+      <button type="button" data-complexity="n"><span class="dot" style="background:var(--c-n)"></span>O(n)</button>
+      <button type="button" data-complexity="nlogn"><span class="dot" style="background:var(--c-nlogn)"></span>O(n log n)</button>
+      <button type="button" data-complexity="n2"><span class="dot" style="background:var(--c-n2)"></span>O(n&sup2;)</button>
+      <button type="button" data-complexity="exp"><span class="dot" style="background:var(--c-exp)"></span>Exponential</button>
+    </div>
+
+    <div class="progress-chip">
+      <span class="progress-summary" id="progress-summary"></span>
+      <div class="bar"><div class="progress-bar-fill"></div></div>
+    </div>
+    <div class="streak-badge" id="streak-badge" role="status">
+      <span class="streak-badge-n">0</span>
+      <span class="streak-badge-label">day streak</span>
+    </div>
+    <button type="button" id="achievements-trigger" class="achievements-trigger" aria-haspopup="dialog" aria-label="View achievements">
+      <span aria-hidden="true">&#127942;</span>
+    </button>
+    <button type="button" id="onboarding-trigger" class="achievements-trigger" aria-haspopup="dialog" aria-label="Replay the tour">
+      <span aria-hidden="true">?</span>
+    </button>
+  </header>
+
+  <main id="main-content" tabindex="-1">
+    <div id="graphWrap">
+      <svg id="graphSvg" viewBox="0 0 1650 1300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Roadmap prerequisite graph">
+        <g id="viewport">
+          <g id="edgesLayer"></g>
+          <g id="nodesLayer"></g>
+        </g>
+      </svg>
+    </div>
+
+    <div id="listView">
+      <div class="list-inner" id="listInner"></div>
+    </div>
+
+    <div class="zoom-controls">
+      <button type="button" id="zoomIn" aria-label="Zoom in">+</button>
+      <button type="button" id="zoomReset" aria-label="Reset zoom">&#10021;</button>
+      <button type="button" id="zoomOut" aria-label="Zoom out">&minus;</button>
+    </div>
+
+    <div class="hint">Drag to pan &middot; scroll to zoom &middot; click a node for details</div>
+  </main>
 </div>
 
-<div class="roadmap-view-toggle" role="group" aria-label="Roadmap view">
-  <button type="button" id="view-cards-btn" class="view-toggle-btn" aria-pressed="true">Cards</button>
-  <button type="button" id="view-timeline-btn" class="view-toggle-btn" aria-pressed="false">Timeline</button>
-  <button type="button" id="view-guided-btn" class="view-toggle-btn" aria-pressed="false">Guided</button>
-</div>
-
-<div class="roadmap-grid" id="roadmap-grid">
-  {% for category in categories %}
-    {% set cat_id = "cat-" ~ loop.index0 %}
-    <section class="roadmap-card" style="--cat: var(--cat-{{ category.slot }});">
-      <h2>
-        <span class="roadmap-card-emoji" aria-hidden="true">{{ category.emoji }}</span> {{ category.name }}
-        <span class="roadmap-card-progress" data-progress-category="{{ cat_id }}" role="status"></span>
-      </h2>
-      <ul>
-        {% for topic in category.topics %}
-          <li>
-            <a href="/topic/{{ topic.slug }}" data-progress-slug="{{ topic.slug }}" data-progress-category-of="{{ cat_id }}"
-               class="{% if topic.is_coming_soon %}coming-soon{% endif %}">
-              {{ topic.title }}
-              <span class="sr-only progress-complete-label" hidden> - completed</span>
-              {% if topic.is_coming_soon %}<span class="badge">soon</span>{% endif %}
-            </a>
-          </li>
-        {% endfor %}
-      </ul>
-    </section>
-  {% endfor %}
-</div>
-
-<div class="roadmap-timeline" id="roadmap-timeline">
-  <div class="timeline-track">
-    {% for category in categories %}
-      {% set cat_id = "cat-" ~ loop.index0 %}
-      {% set topic_count = category.topics|length %}
-      <a href="/topic/{{ category.topics[0].slug }}" class="timeline-node" style="--cat: var(--cat-{{ category.slot }});">
-        <span class="timeline-node-dot" aria-hidden="true">{{ category.emoji }}</span>
-        <span class="timeline-node-label">{{ category.name }}</span>
-        <span class="timeline-node-tip" role="status">{{ topic_count }} topic{{ "s" if topic_count != 1 else "" }} &middot; <span data-progress-category="{{ cat_id }}"></span> done</span>
-      </a>
-    {% endfor %}
+<div class="detail-panel" id="detailPanel">
+  <div class="panel-top">
+    <button type="button" class="panel-close" id="panelClose" aria-label="Close">&times;</button>
+    <div class="panel-crumb" id="panelCrumb"></div>
+    <span class="panel-tag" id="panelTag"></span>
+    <h2 class="panel-title" id="panelTitle"></h2>
+    <div class="panel-complexity" id="panelComplexity"><span class="dot"></span><span id="panelComplexityText"></span></div>
+  </div>
+  <div class="panel-body">
+    <p id="panelBlurb"></p>
+    <div class="prereq-box" id="prereqBox" hidden>
+      <div class="label">Requires first</div>
+      <div id="prereqList"></div>
+    </div>
+    <a class="panel-cta" id="panelCta" href="#">Start topic &rarr;</a>
   </div>
 </div>
+{% endblock %}
 
-<div class="roadmap-guided" id="roadmap-guided">
-  <div class="guided-card" id="guided-card">
-    <div class="guided-meta">
-      <span class="guided-step" id="guided-step"></span>
-      <span class="category-badge" id="guided-category-badge"></span>
-    </div>
-    <h2 id="guided-title"></h2>
-    <p class="guided-complete-badge" id="guided-complete-badge" hidden>&#10003; already completed</p>
-    <p class="guided-why" id="guided-why"></p>
-    <div class="guided-actions">
-      <button type="button" id="guided-back" class="guided-nav-btn">&larr; Back</button>
-      <a href="#" id="guided-start" class="btn-primary guided-start"></a>
-      <button type="button" id="guided-next" class="guided-nav-btn">Next &rarr;</button>
-    </div>
-  </div>
-</div>
-<script src="{{ url_for('static', path='js/core/scroll_reveal.js') }}"></script>
+{% block scripts %}
+<script src="{{ url_for('static', path='js/core/graph_map.js') }}"></script>
 {% endblock %}

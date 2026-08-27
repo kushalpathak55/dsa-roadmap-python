@@ -90,14 +90,17 @@ def test_built_topic_body_has_no_auto_complete_flag():
 
 
 def test_home_page_and_nav_carry_progress_slugs_for_every_topic():
+    # Every topic appears exactly once, in the hidden #topic-data block
+    # (base.html) - the single DOM data source for search/progress/
+    # achievements/locking now that there's no persistent sidebar duplicating
+    # it alongside the homepage's own markup.
     response = client.get("/")
     _, by_slug = load_roadmap()
     for slug in by_slug:
-        # sidebar nav (present on every page) + the home roadmap card itself
-        assert response.text.count(f'data-progress-slug="{slug}"') == 2
+        assert response.text.count(f'data-progress-slug="{slug}"') == 1
     topic_response = client.get("/topic/bubble-sort")
     for slug in by_slug:
-        assert f'data-progress-slug="{slug}"' in topic_response.text  # sidebar nav
+        assert f'data-progress-slug="{slug}"' in topic_response.text
 
 
 def test_every_topic_page_has_skip_link_and_main_landmark():
@@ -109,10 +112,13 @@ def test_every_topic_page_has_skip_link_and_main_landmark():
 
 def test_active_nav_link_has_aria_current():
     response = client.get("/topic/bubble-sort")
-    # Exactly one nav link should be marked current - the active topic itself.
+    # Exactly one topic-data entry should be marked current - the active
+    # topic itself. Search from the id itself since data-blurb text length
+    # varies per topic and can push aria-current past any fixed window.
     assert response.text.count('aria-current="page"') == 1
-    bubble_sort_block = response.text.split('data-progress-slug="bubble-sort"')[1][:300]
-    assert 'aria-current="page"' in bubble_sort_block
+    start = response.text.index('data-progress-slug="bubble-sort"')
+    end = response.text.index('>', start)
+    assert 'aria-current="page"' in response.text[start:end]
 
 
 def test_command_palette_has_combobox_listbox_roles():
@@ -122,21 +128,24 @@ def test_command_palette_has_combobox_listbox_roles():
     assert 'aria-controls="cmdk-results"' in response.text
 
 
-def test_home_page_category_progress_grouping_matches_category_topic_counts():
-    # Regression: `data-progress-category-of` on each topic link must key off
-    # the *category* loop's index, not the nested topic loop's index (a
-    # nested {% for %} shadows the outer loop's `loop` variable in Jinja) -
-    # otherwise progress.js groups topics into the wrong category buckets.
+def test_topic_data_category_and_requires_are_well_formed():
+    # graph_map.js/achievements.js/progress.js all group topics by the flat
+    # `data-category` attribute now (no more nested category containers to
+    # walk) - verify every topic carries its real category, and every
+    # `requires` slug in the hidden data block actually names a real topic
+    # (a typo here would silently produce an unreachable/always-locked node).
     response = client.get("/")
-    categories, _ = load_roadmap()
-    for i, category in enumerate(categories):
-        cat_id = f"cat-{i}"
-        # Two legitimate readers per category: the card grid's progress badge
-        # and the timeline view's hover tip - both render server-side on the
-        # same page (see index.html), and progress.js updates each
-        # independently, so 2 is the correct count, not a duplication bug.
-        assert response.text.count(f'data-progress-category="{cat_id}"') == 2
-        assert response.text.count(f'data-progress-category-of="{cat_id}"') == len(category.topics)
+    categories, by_slug = load_roadmap()
+    all_slugs = set(by_slug)
+    for category in categories:
+        for topic in category.topics:
+            start = response.text.index(f'data-progress-slug="{topic.slug}"')
+            end = response.text.index('>', start)
+            tag = response.text[start:end]
+            assert f'data-category="{html.escape(category.name)}"' in tag
+            requires_attr = tag.split('data-requires="')[1].split('"')[0]
+            requires = [s for s in requires_attr.split(',') if s]
+            assert set(requires) <= all_slugs, f"{topic.slug} requires unknown slug(s): {requires}"
 
 
 def test_run_bubble_sort_returns_steps():

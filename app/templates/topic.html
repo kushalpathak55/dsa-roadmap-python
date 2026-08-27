@@ -3,165 +3,245 @@
 {% block title %}{{ topic.title }} — DSA Roadmap{% endblock %}
 
 {% block content %}
-<div class="breadcrumb">dsa / {{ topic.category_path }} / {{ topic.markdown }}</div>
-<header class="page-header" style="--cat: var(--cat-{{ topic.category_slot }});">
-  <span class="category-badge">{{ topic.category_emoji }} {{ topic.category }}</span>
-  <h1>{{ topic.title }}</h1>
-</header>
-
-{% if topic.is_built %}
-<section class="visualizer" data-algo-key="{{ topic.algo_key }}" data-family="{{ topic.family }}" data-topic-slug="{{ topic.slug }}"
-          data-needs-target="{{ 'true' if topic.algo_key in ('linear_search', 'binary_search', 'bst_ops', 'two_pointer_sum') else 'false' }}"
-          data-needs-k="{{ 'true' if topic.algo_key == 'sliding_window_max_sum' else 'false' }}"
-          style="--cat: var(--cat-{{ topic.category_slot }});">
-  <div class="visualizer-header">
-    <span class="visualizer-label">Live view</span>
+<div class="topic-topbar">
+  <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text">DSA Roadmap</span></a>
+  <div class="topic-crumb">map / {{ topic.category_path }} / <span class="here">{{ topic.slug }}</span></div>
+  <div class="progress-chip">
+    <span class="progress-summary" id="progress-summary"></span>
+    <div class="bar"><div class="progress-bar-fill"></div></div>
   </div>
+  <div class="streak-badge" id="streak-badge" role="status">
+    <span class="streak-badge-n">0</span>
+    <span class="streak-badge-label">day streak</span>
+  </div>
+  <button type="button" id="achievements-trigger" class="achievements-trigger" aria-haspopup="dialog" aria-label="View achievements">
+    <span aria-hidden="true">&#127942;</span>
+  </button>
+  <button type="button" id="onboarding-trigger" class="achievements-trigger" aria-haspopup="dialog" aria-label="Replay the tour">
+    <span aria-hidden="true">?</span>
+  </button>
+  <a class="back-pill" href="/">&larr; Back to map</a>
+</div>
 
-  {% if topic.family in ("array", "tree", "graph", "dp", "list", "hash") %}
-    <div class="predict-bar">
-      <button id="predict-toggle" type="button" class="predict-toggle active" data-tooltip="Guess the next step before it happens">🎮 Predict Mode: On</button>
-      <span id="predict-score" class="predict-score"></span>
+<main id="main-content" tabindex="-1" class="topic-page" style="--cat: var(--c-{{ topic.complexity_bucket }});">
+
+  <section class="hero">
+    <div class="tag-row">
+      <span class="cat-tag">{{ topic.category_emoji }} {{ topic.category }}</span>
+      {% if topic.has_complexity %}
+        <span class="complexity-badge">
+          <span class="dot"></span>{{ topic.complexity.time_avg }} time{% if topic.complexity.space and topic.complexity.space != '-' %} &middot; {{ topic.complexity.space }} space{% endif %}
+        </span>
+      {% endif %}
     </div>
-  {% endif %}
+    <h1 class="title">{{ topic.title }}</h1>
+    {% if topic.why %}<p class="subtitle">{{ topic.why }}</p>{% endif %}
 
-  {% if topic.family == "graph" %}
-    {% if topic.algo_key == "dijkstra_demo" %}
-      {% set default_edges = "A-B:4, A-C:1, C-B:2, B-D:5, C-D:8, D-E:3" %}
-    {% else %}
-      {% set default_edges = "A-B, A-C, B-D, C-D, D-E" %}
+    {% if prev_topic or next_topic %}
+      <div class="mini-map">
+        {% if prev_topic %}
+          <div class="mm-node done" style="--node-color: var(--c-{{ prev_topic.complexity_bucket }});">
+            <div class="mm-circle">&#10003;</div>
+            <div class="mm-label">{{ prev_topic.title }}</div>
+            <div class="mm-sub">{{ 'core concept' if prev_topic.complexity_bucket == 'root' else prev_topic.complexity.time_avg }}</div>
+          </div>
+          <div class="mm-line lit" style="--node-color: var(--c-{{ topic.complexity_bucket }});"></div>
+        {% endif %}
+        <div class="mm-node current" style="--node-color: var(--c-{{ topic.complexity_bucket }});">
+          <div class="mm-circle">&#9679;</div>
+          <div class="mm-label">{{ topic.title }}</div>
+          <div class="mm-sub">you are here</div>
+        </div>
+        {% if next_topic %}
+          <div class="mm-line" style="--node-color: var(--c-{{ next_topic.complexity_bucket }});"></div>
+          <div class="mm-node next" style="--node-color: var(--c-{{ next_topic.complexity_bucket }});">
+            <div class="mm-circle">&rarr;</div>
+            <div class="mm-label">{{ next_topic.title }}</div>
+            <div class="mm-sub">{{ 'core concept' if next_topic.complexity_bucket == 'root' else next_topic.complexity.time_avg }}</div>
+          </div>
+        {% endif %}
+      </div>
     {% endif %}
-    <div class="input-panel">
-      <label for="edges-input">Edges ({{ "A-B or A-B:weight" if topic.algo_key == "dijkstra_demo" else "A-B" }}, comma-separated)</label>
-      <input id="edges-input" type="text" value="{{ default_edges }}">
-      {% if topic.algo_key != "topological_sort_demo" %}
-        <label for="start-input">Start node</label>
-        <input id="start-input" type="text" value="A" class="input-narrow">
-      {% endif %}
-      <button id="btn-run" type="button" class="btn-primary">Run</button>
-    </div>
-  {% elif topic.family == "dp" %}
-    <div class="input-panel">
-      {% if topic.algo_key == "fibonacci_memo" %}
-        <label for="n-input">n</label>
-        <input id="n-input" type="number" value="10" class="input-narrow">
-      {% elif topic.algo_key == "n_queens" %}
-        <label for="n-input">Board size (n)</label>
-        <input id="n-input" type="number" value="4" min="1" max="5" class="input-narrow">
-      {% elif topic.algo_key == "knapsack" %}
-        <label for="capacity-input">Capacity</label>
-        <input id="capacity-input" type="number" value="10" class="input-narrow">
-        <label for="weights-input">Weights</label>
-        <input id="weights-input" type="text" value="2, 3, 4, 5">
-        <label for="values-input">Values</label>
-        <input id="values-input" type="text" value="3, 4, 5, 6">
-      {% elif topic.algo_key == "lcs" %}
-        <label for="a-input">String A</label>
-        <input id="a-input" type="text" value="ABCBDAB">
-        <label for="b-input">String B</label>
-        <input id="b-input" type="text" value="BDCABA">
-      {% endif %}
-      <button id="btn-run" type="button" class="btn-primary">Run</button>
-    </div>
-  {% elif topic.algo_key == "trie_demo" %}
-    <div class="input-panel">
-      <label for="words-input">Words (comma-separated)</label>
-      <input id="words-input" type="text" value="cat, car, card, care, dog, do">
-      <button id="btn-run" type="button" class="btn-primary">Run</button>
-    </div>
-  {% elif topic.algo_key == "union_find_demo" %}
-    <div class="input-panel">
-      <label for="edges-input">Union operations (A-B, comma-separated)</label>
-      <input id="edges-input" type="text" value="A-B, B-C, D-E, E-F, F-G, A-D, B-G">
-      <button id="btn-run" type="button" class="btn-primary">Run</button>
-    </div>
-  {% else %}
-    <div class="input-panel">
-      <label for="array-input">Values (comma-separated integers)</label>
-      <input id="array-input" type="text" value="5, 3, 8, 1, 9, 2, 7">
-      <button id="btn-randomize" type="button">Randomize</button>
-      <div class="target-field" style="display:none;">
-        <label for="target-input">Target</label>
-        <input id="target-input" type="number" value="7">
+  </section>
+
+  {% if topic.eli5_html %}
+    <section class="eli5-box">
+      <div class="eli5-text">
+        <h2>how would you explain this to a 5 year old?</h2>
+        {{ topic.eli5_html | safe }}
       </div>
-      <div class="k-field" style="display:none;">
-        <label for="k-input">Window size (k)</label>
-        <input id="k-input" type="number" value="3" min="1">
-      </div>
-      <button id="btn-run" type="button" class="btn-primary">Run</button>
-    </div>
+      {% if topic.motion %}
+        {% include "partials/_motion.html" %}
+      {% endif %}
+    </section>
   {% endif %}
 
-  {% if topic.family == "list" %}
-    <div id="stage" class="list-stage"></div>
-  {% elif topic.family == "hash" %}
-    <div id="stage" class="hash-stage"></div>
-  {% elif topic.family in ("tree", "graph") %}
-    <div id="stage" class="tree-stage"></div>
-  {% elif topic.family == "dp" %}
-    <div id="stage" class="dp-stage"></div>
-  {% else %}
-    <canvas id="stage" width="720" height="320"></canvas>
+  {% if topic.is_built %}
+    <section>
+      <h2 class="h">Watch it run</h2>
+      <div class="visualizer" data-algo-key="{{ topic.algo_key }}" data-family="{{ topic.family }}" data-topic-slug="{{ topic.slug }}"
+                data-needs-target="{{ 'true' if topic.algo_key in ('linear_search', 'binary_search', 'bst_ops', 'two_pointer_sum') else 'false' }}"
+                data-needs-k="{{ 'true' if topic.algo_key == 'sliding_window_max_sum' else 'false' }}">
+        <div class="visualizer-header">
+          <span class="visualizer-label"><span class="live-dot" aria-hidden="true"></span>Live view</span>
+        </div>
+
+        {% if topic.family in ("array", "tree", "graph", "dp", "list", "hash") %}
+          <div class="predict-bar">
+            <button id="predict-toggle" type="button" class="predict-toggle active" data-tooltip="Guess the next step before it happens">🎮 Predict Mode: On</button>
+            <span id="predict-score" class="predict-score"></span>
+          </div>
+        {% endif %}
+
+        {% if topic.family == "graph" %}
+          {% if topic.algo_key == "dijkstra_demo" %}
+            {% set default_edges = "A-B:4, A-C:1, C-B:2, B-D:5, C-D:8, D-E:3" %}
+          {% else %}
+            {% set default_edges = "A-B, A-C, B-D, C-D, D-E" %}
+          {% endif %}
+          <div class="input-panel">
+            <label for="edges-input">Edges ({{ "A-B or A-B:weight" if topic.algo_key == "dijkstra_demo" else "A-B" }}, comma-separated)</label>
+            <input id="edges-input" type="text" value="{{ default_edges }}">
+            {% if topic.algo_key != "topological_sort_demo" %}
+              <label for="start-input">Start node</label>
+              <input id="start-input" type="text" value="A" class="input-narrow">
+            {% endif %}
+            <button id="btn-run" type="button" class="btn-primary">Run</button>
+          </div>
+        {% elif topic.family == "dp" %}
+          <div class="input-panel">
+            {% if topic.algo_key == "fibonacci_memo" %}
+              <label for="n-input">n</label>
+              <input id="n-input" type="number" value="10" class="input-narrow">
+            {% elif topic.algo_key == "n_queens" %}
+              <label for="n-input">Board size (n)</label>
+              <input id="n-input" type="number" value="4" min="1" max="5" class="input-narrow">
+            {% elif topic.algo_key == "knapsack" %}
+              <label for="capacity-input">Capacity</label>
+              <input id="capacity-input" type="number" value="10" class="input-narrow">
+              <label for="weights-input">Weights</label>
+              <input id="weights-input" type="text" value="2, 3, 4, 5">
+              <label for="values-input">Values</label>
+              <input id="values-input" type="text" value="3, 4, 5, 6">
+            {% elif topic.algo_key == "lcs" %}
+              <label for="a-input">String A</label>
+              <input id="a-input" type="text" value="ABCBDAB">
+              <label for="b-input">String B</label>
+              <input id="b-input" type="text" value="BDCABA">
+            {% endif %}
+            <button id="btn-run" type="button" class="btn-primary">Run</button>
+          </div>
+        {% elif topic.algo_key == "trie_demo" %}
+          <div class="input-panel">
+            <label for="words-input">Words (comma-separated)</label>
+            <input id="words-input" type="text" value="cat, car, card, care, dog, do">
+            <button id="btn-run" type="button" class="btn-primary">Run</button>
+          </div>
+        {% elif topic.algo_key == "union_find_demo" %}
+          <div class="input-panel">
+            <label for="edges-input">Union operations (A-B, comma-separated)</label>
+            <input id="edges-input" type="text" value="A-B, B-C, D-E, E-F, F-G, A-D, B-G">
+            <button id="btn-run" type="button" class="btn-primary">Run</button>
+          </div>
+        {% else %}
+          <div class="input-panel">
+            <label for="array-input">Values (comma-separated integers)</label>
+            <input id="array-input" type="text" value="5, 3, 8, 1, 9, 2, 7">
+            <button id="btn-randomize" type="button">Randomize</button>
+            <div class="target-field" style="display:none;">
+              <label for="target-input">Target</label>
+              <input id="target-input" type="number" value="7">
+            </div>
+            <div class="k-field" style="display:none;">
+              <label for="k-input">Window size (k)</label>
+              <input id="k-input" type="number" value="3" min="1">
+            </div>
+            <button id="btn-run" type="button" class="btn-primary">Run</button>
+          </div>
+        {% endif %}
+
+        {% if topic.family == "list" %}
+          <div id="stage" class="list-stage"></div>
+        {% elif topic.family == "hash" %}
+          <div id="stage" class="hash-stage"></div>
+        {% elif topic.family in ("tree", "graph") %}
+          <div id="stage" class="tree-stage"></div>
+        {% elif topic.family == "dp" %}
+          <div id="stage" class="dp-stage"></div>
+        {% else %}
+          <canvas id="stage" width="720" height="320"></canvas>
+        {% endif %}
+
+        {% if topic.family in ("array", "tree", "graph", "dp", "list", "hash") %}
+          <div id="predict-panel" class="predict-panel" hidden role="region" aria-live="polite" aria-label="Predict what happens next">
+            <p id="predict-question" class="predict-question"></p>
+            <div id="predict-options" class="predict-options"></div>
+            <p id="predict-feedback" class="predict-feedback"></p>
+          </div>
+        {% endif %}
+
+        {% include "partials/_controls.html" %}
+      </div>
+    </section>
+  {% elif topic.status == "coming_soon" %}
+    <section class="coming-soon-banner">
+      <p>The interactive visualization for this topic is coming soon.</p>
+    </section>
   {% endif %}
 
+  <section class="explanation">
+    <h2 class="h">The technical explanation</h2>
+    {{ topic.explanation_html | safe }}
+  </section>
+
+  {% if topic.has_complexity %}
+    <section class="complexity">
+      <h2 class="h">Complexity</h2>
+      {% include "partials/_complexity_table.html" %}
+    </section>
+  {% endif %}
+
+  {% if prev_topic or next_topic %}
+    <div class="path-nav">
+      {% if prev_topic %}
+        <a class="nav-card prev" href="/topic/{{ prev_topic.slug }}" style="--node-color: var(--c-{{ prev_topic.complexity_bucket }});">
+          <div class="dir">&larr; Prerequisite</div>
+          <div class="name">{{ prev_topic.title }}</div>
+          <div class="meta"><span class="dot"></span>{{ 'core concept' if prev_topic.complexity_bucket == 'root' else prev_topic.complexity.time_avg }}</div>
+        </a>
+      {% endif %}
+      {% if next_topic %}
+        <a class="nav-card next" href="/topic/{{ next_topic.slug }}" style="--node-color: var(--c-{{ next_topic.complexity_bucket }});">
+          <div class="dir">Next in path &rarr;</div>
+          <div class="name">{{ next_topic.title }}</div>
+          <div class="meta"><span class="dot"></span>{{ 'core concept' if next_topic.complexity_bucket == 'root' else next_topic.complexity.time_avg }}</div>
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+</main>
+{% endblock %}
+
+{% block scripts %}
+{% if topic.is_built %}
+  <script src="{{ url_for('static', path='js/core/player.js') }}"></script>
+  <script src="{{ url_for('static', path='js/core/controls.js') }}"></script>
   {% if topic.family in ("array", "tree", "graph", "dp", "list", "hash") %}
-    <div id="predict-panel" class="predict-panel" hidden role="region" aria-live="polite" aria-label="Predict what happens next">
-      <p id="predict-question" class="predict-question"></p>
-      <div id="predict-options" class="predict-options"></div>
-      <p id="predict-feedback" class="predict-feedback"></p>
-    </div>
+    <script src="{{ url_for('static', path='js/core/predict.js') }}"></script>
   {% endif %}
-
-  {% include "partials/_controls.html" %}
-</section>
-
-<script src="{{ url_for('static', path='js/core/player.js') }}"></script>
-<script src="{{ url_for('static', path='js/core/controls.js') }}"></script>
-{% if topic.family in ("array", "tree", "graph", "dp", "list", "hash") %}
-  <script src="{{ url_for('static', path='js/core/predict.js') }}"></script>
-{% endif %}
-{% if topic.family == "list" %}
-  <script src="{{ url_for('static', path='js/renderers/list_boxes.js') }}"></script>
-{% elif topic.family == "hash" %}
-  <script src="{{ url_for('static', path='js/renderers/hash_table.js') }}"></script>
-{% elif topic.family in ("tree", "graph") %}
-  <script src="{{ url_for('static', path='vendor/d3.v7.min.js') }}"></script>
-  <script src="{{ url_for('static', path='js/renderers/tree_graph.js') }}"></script>
-{% elif topic.family == "dp" %}
-  <script src="{{ url_for('static', path='js/renderers/dp_grid.js') }}"></script>
-{% else %}
-  <script src="{{ url_for('static', path='js/renderers/bars.js') }}"></script>
-{% endif %}
-<script src="{{ url_for('static', path='js/app.js') }}"></script>
-{% elif topic.status == "coming_soon" %}
-<section class="coming-soon-banner">
-  <p>The interactive visualization for this topic is coming soon.</p>
-</section>
-{% endif %}
-
-{% if topic.eli5_html %}
-<section class="eli5-box" style="--cat: var(--cat-{{ topic.category_slot }});">
-  <div class="eli5-text">
-    <h2>how would you explain this to a 5 year old?</h2>
-    {{ topic.eli5_html | safe }}
-  </div>
-  {% if topic.motion %}
-    {% include "partials/_motion.html" %}
+  {% if topic.family == "list" %}
+    <script src="{{ url_for('static', path='js/renderers/list_boxes.js') }}"></script>
+  {% elif topic.family == "hash" %}
+    <script src="{{ url_for('static', path='js/renderers/hash_table.js') }}"></script>
+  {% elif topic.family in ("tree", "graph") %}
+    <script src="{{ url_for('static', path='vendor/d3.v7.min.js') }}"></script>
+    <script src="{{ url_for('static', path='js/renderers/tree_graph.js') }}"></script>
+  {% elif topic.family == "dp" %}
+    <script src="{{ url_for('static', path='js/renderers/dp_grid.js') }}"></script>
+  {% else %}
+    <script src="{{ url_for('static', path='js/renderers/bars.js') }}"></script>
   {% endif %}
-</section>
+  <script src="{{ url_for('static', path='js/app.js') }}"></script>
 {% endif %}
-
-<section class="explanation">
-  <h2>The technical explanation</h2>
-  {{ topic.explanation_html | safe }}
-</section>
-
-{% if topic.has_complexity %}
-<section class="complexity">
-  <h2>Complexity</h2>
-  {% include "partials/_complexity_table.html" %}
-</section>
-{% endif %}
-
-<div class="guided-continue" id="guided-continue" hidden></div>
+<script src="{{ url_for('static', path='js/core/topic_reveal.js') }}"></script>
 {% endblock %}

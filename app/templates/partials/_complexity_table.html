@@ -1,14 +1,15 @@
+{% macro chip(value) %}<span class="cell-chip" style="--chip-color: var(--c-{{ complexity_bucket_for(value) }});"><span class="dot"></span>{{ value }}</span>{% endmacro %}
 <table class="complexity-table">
   <thead>
     <tr><th></th><th>Best</th><th>Average</th><th>Worst</th><th>Space</th></tr>
   </thead>
   <tbody>
     <tr>
-      <td>Time / Space</td>
-      <td><code>{{ topic.complexity.time_best }}</code></td>
-      <td><code>{{ topic.complexity.time_avg }}</code></td>
-      <td><code>{{ topic.complexity.time_worst }}</code></td>
-      <td><code>{{ topic.complexity.space }}</code></td>
+      <td class="row-label">Time / Space</td>
+      <td>{{ chip(topic.complexity.time_best) }}</td>
+      <td>{{ chip(topic.complexity.time_avg) }}</td>
+      <td>{{ chip(topic.complexity.time_worst) }}</td>
+      <td>{{ chip(topic.complexity.space) }}</td>
     </tr>
   </tbody>
 </table>

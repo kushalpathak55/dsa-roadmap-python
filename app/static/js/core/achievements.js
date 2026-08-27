@@ -29,16 +29,19 @@
 
   const unlocked = loadUnlocked();
 
-  // Same DOM-grouping technique progress.js uses internally:
-  // data-progress-category-of only exists on the homepage's card grid, but
-  // the sidebar's .nav-category nesting is present on every page.
+  // Same attribute-grouping technique progress.js uses internally: every
+  // [data-progress-slug] element (the hidden topic-data block in base.html,
+  // present on every page) carries its own data-category, no DOM nesting
+  // to walk.
   function categoryGroups() {
-    return [...document.querySelectorAll('.nav-category')].map((catEl) => {
-      const nameEl = catEl.querySelector('.nav-category-name');
-      const name = nameEl ? nameEl.textContent.trim().replace(/\s+/g, ' ') : 'Category';
-      const slugs = [...catEl.querySelectorAll('[data-progress-slug]')].map((el) => el.dataset.progressSlug);
-      return { name, slugs };
+    const byCategory = new Map();
+    document.querySelectorAll('[data-progress-slug]').forEach((el) => {
+      const name = el.dataset.category;
+      if (!name) return;
+      if (!byCategory.has(name)) byCategory.set(name, []);
+      byCategory.get(name).push(el.dataset.progressSlug);
     });
+    return [...byCategory.entries()].map(([name, slugs]) => ({ name, slugs }));
   }
 
   function allSlugs() {
