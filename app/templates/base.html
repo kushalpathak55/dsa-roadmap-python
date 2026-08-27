@@ -5,21 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{% block title %}DSA Roadmap{% endblock %}</title>
 
-  <script>
-    // Apply a persisted explicit light/dark choice before first paint. Every
-    // page needs this, not just the homepage - the toggle lives in the
-    // sidebar, which is present everywhere - see theme.js for the toggle
-    // itself and style.css's [data-theme] blocks for the actual palette.
-    (function () {
-      try {
-        var saved = localStorage.getItem('dsa-theme');
-        if (saved === 'light' || saved === 'dark') {
-          document.documentElement.dataset.theme = saved;
-        }
-      } catch (e) { /* localStorage unavailable - falls back to prefers-color-scheme */ }
-    })();
-  </script>
-  <meta name="theme-color" content="#10141c">
+  <meta name="theme-color" content="#eef2f0">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -49,7 +35,7 @@
       </div>
       <div class="onboarding-step" data-step="1" hidden>
         <h2 tabindex="-1">Predict before you see it</h2>
-        <p>On a topic page, flip on <strong>Predict Mode</strong> to guess the next step before it plays - a fast way to check you actually understand the algorithm.</p>
+        <p>On a supported topic page, <strong>Predict Mode</strong> is on by default - guess the next step before it plays. Get it right for a streak; turn it off anytime if you'd rather just watch.</p>
       </div>
       <div class="onboarding-step" data-step="2" hidden>
         <h2 tabindex="-1">Keyboard-first controls</h2>
@@ -68,6 +54,15 @@
       </div>
     </div>
   </div>
+  <div class="achievements-overlay" id="achievements-overlay" hidden>
+    <div class="achievements-dialog" role="dialog" aria-modal="true" aria-label="Achievements">
+      <div class="achievements-header">
+        <h2>Achievements</h2>
+        <button type="button" id="achievements-close" class="achievements-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="achievements-list" id="achievements-list"></div>
+    </div>
+  </div>
   <div class="mobile-topbar">
     <button type="button" id="sidebar-toggle" class="sidebar-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Open menu">
       <span class="sidebar-toggle-bar"></span>
@@ -83,9 +78,6 @@
     <nav class="sidebar" id="sidebar" aria-label="Roadmap">
       <div class="sidebar-header">
         <a class="brand" href="/">DSA Roadmap</a>
-        <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Switch to light theme" aria-pressed="false">
-          <span aria-hidden="true">&#127769;</span>
-        </button>
         <button type="button" id="sidebar-close" class="sidebar-close" aria-label="Close menu">&times;</button>
       </div>
       <div class="cmdk-row">
@@ -96,6 +88,15 @@
         <button type="button" id="onboarding-trigger" class="onboarding-trigger" aria-haspopup="dialog" aria-label="Show quick tour">?</button>
       </div>
       <div class="progress-summary" id="progress-summary" role="status"></div>
+      <div class="streak-row">
+        <div class="streak-badge" id="streak-badge" role="status">
+          <span class="streak-badge-n">0</span>
+          <span class="streak-badge-label">day streak</span>
+        </div>
+        <button type="button" id="achievements-trigger" class="achievements-trigger" aria-haspopup="dialog" aria-label="View achievements">
+          <span aria-hidden="true">&#127942;</span>
+        </button>
+      </div>
       {% for category in nav_categories %}
         <div class="nav-category" style="--cat: var(--cat-{{ category.slot }});">
           <div class="nav-category-name"><span class="nav-category-emoji" aria-hidden="true">{{ category.emoji }}</span> {{ category.name }}</div>
@@ -120,8 +121,10 @@
       {% block content %}{% endblock %}
     </main>
   </div>
-  <script src="{{ url_for('static', path='js/core/theme.js') }}"></script>
+  <script src="{{ url_for('static', path='js/core/streak.js') }}"></script>
+  <script src="{{ url_for('static', path='js/core/celebrate.js') }}"></script>
   <script src="{{ url_for('static', path='js/core/progress.js') }}"></script>
+  <script src="{{ url_for('static', path='js/core/achievements.js') }}"></script>
   <script src="{{ url_for('static', path='js/core/command_palette.js') }}"></script>
   <script src="{{ url_for('static', path='js/core/sidebar.js') }}"></script>
   <script src="{{ url_for('static', path='js/core/onboarding.js') }}"></script>

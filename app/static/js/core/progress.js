@@ -32,11 +32,48 @@
     return completed.has(slug);
   }
 
+  // `data-progress-category`/`data-progress-category-of` (used for the
+  // homepage badge counts) only exist on the homepage's card grid/timeline -
+  // markComplete() fires from a topic page instead, where neither attribute
+  // exists at all. Group by the sidebar's `.nav-category` DOM nesting
+  // instead, since the sidebar (and its category grouping) renders on every
+  // page. The loop index is only ever compared against itself within one
+  // markComplete() call, so it doesn't need to match any server-side id.
+  function fullyCompletedCategories() {
+    const result = new Set();
+    document.querySelectorAll('.nav-category').forEach((catEl, index) => {
+      const items = catEl.querySelectorAll('[data-progress-slug]');
+      if (items.length && [...items].every((el) => completed.has(el.dataset.progressSlug))) {
+        result.add(index);
+      }
+    });
+    return result;
+  }
+
+  function celebrateCompletion(slug, categoriesBefore) {
+    if (!window.dsaCelebrate) return;
+    // Prefer the status bar on the topic page the user is actually looking
+    // at (they just watched the visualizer finish); fall back to the
+    // sidebar nav link for a content-only topic with no visualizer/status
+    // bar, or if markComplete somehow fired from elsewhere.
+    const origin = document.getElementById('note') || document.querySelector(`.nav-topic[data-progress-slug="${slug}"]`);
+    if (!origin) return;
+    const categoriesAfter = fullyCompletedCategories();
+    const justFinishedCategory = [...categoriesAfter].some((id) => !categoriesBefore.has(id));
+    window.dsaCelebrate(origin, justFinishedCategory ? { count: 40 } : { count: 18 });
+  }
+
   function markComplete(slug) {
     if (!slug || completed.has(slug)) return;
+    // Snapshot which categories are already 100% before this completion, so
+    // celebrateCompletion can tell afterward whether one just crossed the
+    // line - a bigger burst for finishing a whole category, not just a topic.
+    const categoriesBefore = fullyCompletedCategories();
     completed.add(slug);
     save(completed);
     renderMarks();
+    celebrateCompletion(slug, categoriesBefore);
+    if (window.dsaAchievements) window.dsaAchievements.check();
   }
 
   function resetProgress() {

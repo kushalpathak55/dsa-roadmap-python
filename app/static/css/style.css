@@ -1,168 +1,89 @@
 /* ============================================================================
-   DESIGN TOKENS — "Debugger": an IDE/terminal-inspired identity. Dark is the
-   primary, dark-first world (every color below is a deliberate pick tied to
-   a real role in a code editor's world, not a generic dark-mode invert), but
-   it now ships with a real second palette - "Debugger Light" - rather than
-   staying dark-only. Not a naive inversion: category/accent/viz colors are
-   used two ways in this stylesheet (flat ink directly on the page, AND as
-   solid fills with --fill-ink text on top - see that token's own comment),
-   and a color that glows correctly on near-black doesn't necessarily read on
-   white in either role, so light-mode values were re-picked and verified
-   against WCAG contrast for both roles, not derived from the dark ones.
-
-   Pattern: this bare :root is the complete DARK palette (dark-first, so it's
-   the default with no [data-theme] stamp and no OS preference). The light
-   palette lives in two places that must stay in sync - a
-   prefers-color-scheme:light block (guarded so an explicit dark toggle beats
-   a light OS) and an explicit [data-theme="light"] block (so the toggle also
-   wins over a dark OS). See theme.js for the toggle itself.
+   DESIGN TOKENS — "Grid Notebook": a single committed light identity (the
+   third rewrite of this comment - this one is a full replacement, not
+   another layer). Graph-paper page, ink-pen accents, hard "sticker" drop
+   shadows instead of soft blur, sharp small corners instead of rounded ones.
+   Every accent/viz/category color is still dual-role (flat ink directly on
+   --page/--surface, AND a solid fill with --fill-ink text on top - see that
+   token's own comment) and was re-verified against WCAG contrast for both
+   roles with a solver script, not eyeballed. No [data-theme]/OS-preference
+   branching - this app is light-only on purpose, the same way it was
+   dark-only-committed before, just inverted. See theme.js's removal note in
+   base.html if you're looking for the old toggle.
    ========================================================================= */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* Surfaces - three elevation steps, like an editor's gutter/pane/panel. */
-  --page: #10141c;       /* the editor background */
-  --surface: #161b26;    /* a panel: sidebar, visualizer stage, code blocks */
-  --surface-2: #1d2330;  /* an elevated panel-on-a-panel: active tab, tooltip */
+  /* Surfaces - graph-paper base, a white "page" surface for cards sitting on
+     top of it, and a slightly deeper paper tone for nested/elevated bits. */
+  --page: #eef2f0;
+  --surface: #fbfdfc;
+  --surface-2: #f2f5f3;
 
-  /* Ink - a soft blue-white foreground (real editors rarely use pure white),
-     and a dim comment-grey for anything secondary. */
-  --text-primary: #d5dae3;
-  --text-secondary: #aab0bf;
-  --muted: #6b7385;
+  /* Ink - a dark ink-green-grey (real fountain-pen ink is rarely pure
+     black), and a dimmer grey for anything secondary. */
+  --text-primary: #1e2b26;
+  --text-secondary: #52645c;
+  --muted: #7c8d84;
 
-  --gridline: #262c3a;
-  --baseline: #333b4d;
-  --border: rgba(255, 255, 255, 0.09);
+  /* --gridline is the paper's own ruled lines (applied as a repeating
+     background on body - see below), not a border color. */
+  --gridline: rgba(47, 95, 168, 0.07);
+  --baseline: #b9c4bd;
+  --border: rgba(30, 43, 38, 0.14);
 
   /* Every accent/viz/category color below is used two ways: as foreground
      ink directly on --page/--surface (nav labels, borders, checkmarks), and
      as a solid fill with a label drawn ON TOP of it (a filled node circle, a
      predict-mode button, a highlighted table cell) - that second role always
-     needs --fill-ink for its text, never a hardcoded white/black, because
-     which one reads depends on the theme: pastels-on-near-black (dark theme)
-     need dark ink; the darker, more saturated swatches light theme uses for
-     the same tokens need light ink instead - see the light block below. */
-  --fill-ink: #0b0e14;
+     needs --fill-ink for its text, never a hardcoded white/black. Every
+     marker color here is dark/saturated enough to need light ink on a fill,
+     so --fill-ink is just white - no per-theme flip needed anymore now that
+     there's only one theme. */
+  --fill-ink: #ffffff;
 
-  /* A 4px radius throughout - tight and rectangular, a tool's chrome rather
-     than a consumer app's soft cards. */
-  --radius: 4px;
+  /* Sharp corners - cut paper and stickers, not rounded IDE chrome. */
+  --radius: 3px;
 
-  /* Structural face used almost everywhere (nav, headings, labels, code,
-     controls) - real IDE chrome is monospace-led. Prose (ELI5/explanation
-     paragraphs) opts into --sans instead, for actual reading comfort. */
+  /* The signature hard offset shadow - no blur, like a sticker sitting a
+     little proud of the page. Used everywhere a soft box-shadow used to be,
+     instead of one-off shadow values per component. */
+  --shadow-sticker: 3px 3px 0 rgba(30, 43, 38, 0.15);
+
+  /* --mono is reserved for real functional monospace now: code blocks,
+     tabular numbers, small data labels (step counters, timestamps) - not
+     structural chrome. --sans is the default everywhere else, headings
+     included (weight 800), replacing "IDE chrome is monospace-led." */
   --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", "Cascadia Code", Menlo, Consolas, monospace;
   --sans: -apple-system, "Segoe UI", system-ui, sans-serif;
 
-  /* Accent = "function-blue," the color of a called function in a syntax
-     theme - used for links, primary actions, and the default bar/node color. */
-  --accent: #6cb6ff;
-  --accent-hover: #8fc7ff;
+  /* Accent = the primary ink-pen color - links, primary actions, the
+     default bar/node color. */
+  --accent: #2f5fa8;
+  --accent-hover: #3f70bc;
 
-  /* Algorithm-state colors, named for the syntax role they echo rather than
-     picked as generic status colors: comparing = a numeric literal (orange),
-     swapping = a string-interpolation warning (red), sorted/done = a string
-     literal (green), a marked pivot/dependency = a keyword (purple). */
-  --viz-default: #6cb6ff;
-  --viz-pivot: #c792ea;
-  --viz-compare: #f2a65a;
-  --viz-swap: #f07178;
-  --viz-sorted: #89ca78;
+  /* Algorithm-state colors, one marker-pen color per state: comparing =
+     mustard, swapping = red-orange, sorted/done = teal, a marked
+     pivot/dependency = violet. */
+  --viz-default: #2f5fa8;
+  --viz-pivot: #8253ba;
+  --viz-compare: #9e5a1d;
+  --viz-swap: #ce2814;
+  --viz-sorted: #177767;
 
   /* Category accents - one per topic category (see loader.py CATEGORY_META),
-     drawn from the same 8-color syntax-highlight family as the states above
-     so the whole app reads as one coherent "editor theme," not two palettes
-     stapled together. Referenced via an inline `--cat: var(--cat-N)` set
-     once per nav-group/card/header, so components never hardcode a slot. */
-  --cat-1: #6cb6ff; /* blue - Foundations, Graphs */
-  --cat-2: #f2a65a; /* orange - Arrays & Searching, Dynamic Programming */
-  --cat-3: #89ca78; /* green - Sorting */
-  --cat-4: #e5c07b; /* yellow - Linked Lists */
-  --cat-5: #e587c2; /* magenta - Stacks & Queues */
-  --cat-6: #56b6c2; /* cyan - Hashing */
-  --cat-7: #c792ea; /* purple - Trees */
-  --cat-8: #f07178; /* red - Heaps */
-}
-
-/* Debugger Light - values re-picked and WCAG-verified for both the ink and
-   fill roles described above, not a filter:invert() of the dark palette.
-   Kept in sync with the [data-theme="light"] block below on purpose - two
-   copies rather than one shared selector, to make the OS-vs-explicit
-   precedence rules (see the :not() guard) work without extra specificity
-   tricks. */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    color-scheme: light;
-
-    --page: #f3f5f9;
-    --surface: #ffffff;
-    --surface-2: #e9edf5;
-
-    --text-primary: #1a2030;
-    --text-secondary: #4c5568;
-    --muted: #7c869c;
-
-    --gridline: #dde2ec;
-    --baseline: #c7cedd;
-    --border: rgba(10, 14, 20, 0.1);
-
-    --fill-ink: #f7f9fc;
-
-    --accent: #1c6fc9;
-    --accent-hover: #0f5aa8;
-
-    --viz-default: #1c6fc9;
-    --viz-pivot: #8b3fbf;
-    --viz-compare: #a5590d;
-    --viz-swap: #c23b46;
-    --viz-sorted: #3f7a30;
-
-    --cat-1: #1c6fc9;
-    --cat-2: #a5590d;
-    --cat-3: #3f7a30;
-    --cat-4: #906413;
-    --cat-5: #a83a86;
-    --cat-6: #0e7c8a;
-    --cat-7: #8b3fbf;
-    --cat-8: #c23b46;
-  }
-}
-
-:root[data-theme="light"] {
-  color-scheme: light;
-
-  --page: #f3f5f9;
-  --surface: #ffffff;
-  --surface-2: #e9edf5;
-
-  --text-primary: #1a2030;
-  --text-secondary: #4c5568;
-  --muted: #7c869c;
-
-  --gridline: #dde2ec;
-  --baseline: #c7cedd;
-  --border: rgba(10, 14, 20, 0.1);
-
-  --fill-ink: #f7f9fc;
-
-  --accent: #1c6fc9;
-  --accent-hover: #0f5aa8;
-
-  --viz-default: #1c6fc9;
-  --viz-pivot: #8b3fbf;
-  --viz-compare: #a5590d;
-  --viz-swap: #c23b46;
-  --viz-sorted: #3f7a30;
-
-  --cat-1: #1c6fc9;
-  --cat-2: #a5590d;
-  --cat-3: #3f7a30;
-  --cat-4: #906413;
-  --cat-5: #a83a86;
-  --cat-6: #0e7c8a;
-  --cat-7: #8b3fbf;
-  --cat-8: #c23b46;
+     drawn from the same marker-pen family as the states above so the whole
+     app reads as one coherent notebook, not two palettes stapled together.
+     Referenced via an inline `--cat: var(--cat-N)` set once per
+     nav-group/card/header, so components never hardcode a slot. */
+  --cat-1: #2f5fa8; /* ink-blue - Foundations, Graphs */
+  --cat-2: #9e5a1d; /* orange - Arrays & Searching, Dynamic Programming */
+  --cat-3: #177767; /* teal - Sorting */
+  --cat-4: #846514; /* mustard - Linked Lists */
+  --cat-5: #b43f7c; /* magenta - Stacks & Queues */
+  --cat-6: #1d7294; /* steel cyan - Hashing */
+  --cat-7: #8253ba; /* violet - Trees */
+  --cat-8: #ce2814; /* red - Heaps */
 }
 
 /* ============================================================================
@@ -195,25 +116,19 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 body {
   margin: 0;
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: var(--fs-body);
   background: var(--page);
+  background-image:
+    linear-gradient(var(--gridline) 1px, transparent 1px),
+    linear-gradient(90deg, var(--gridline) 1px, transparent 1px);
+  background-size: 22px 22px;
   color: var(--text-primary);
   overflow-x: hidden;
 }
 
-h1 { font-size: var(--fs-h1); margin: 0; }
-h2 { font-size: var(--fs-h2); margin: 0; }
-
-/* Prose reads in --sans (actual paragraphs of explanation), but a heading
-   inside a prose block stays on the structural --mono face, like a comment
-   header inside a file. */
-.eli5-text, .explanation {
-  font-family: var(--sans);
-}
-.eli5-text h2, .explanation h2 {
-  font-family: var(--mono);
-}
+h1 { font-size: var(--fs-h1); font-weight: 800; margin: 0; }
+h2 { font-size: var(--fs-h2); font-weight: 800; margin: 0; }
 
 a { color: var(--accent); }
 
@@ -280,35 +195,13 @@ a { color: var(--accent); }
 }
 .sidebar-header .brand { margin-bottom: 0; flex: 1; min-width: 0; }
 
-.theme-toggle {
-  flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  min-height: 0;
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.theme-toggle:hover { border-color: var(--muted); }
-
 .brand {
   display: block;
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: 800;
+  font-size: 1.05rem;
   margin-bottom: 18px;
   text-decoration: none;
   color: var(--text-primary);
-}
-.brand::before {
-  content: "> ";
-  color: var(--accent);
 }
 
 .progress-summary {
@@ -316,6 +209,40 @@ a { color: var(--accent); }
   color: var(--muted);
   margin: -8px 0 16px;
   min-height: 1em;
+}
+
+.streak-badge {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  width: fit-content;
+  margin: -6px 0 16px;
+  padding: 6px 14px 6px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sticker);
+}
+.streak-badge::before {
+  content: "\2605";
+  position: absolute;
+  top: -11px;
+  right: -8px;
+  font-size: 1.05rem;
+  color: var(--cat-4);
+  transform: rotate(15deg);
+}
+.streak-badge-n {
+  font-family: var(--mono);
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.streak-badge-label {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
 }
 
 .progress-reset {
@@ -403,7 +330,7 @@ a { color: var(--accent); }
   font-family: var(--mono);
   font-size: var(--fs-xs);
   white-space: nowrap;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-sticker);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s ease;
@@ -449,7 +376,7 @@ a { color: var(--accent); }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-sticker);
   overflow: hidden;
 }
 
@@ -516,7 +443,7 @@ a { color: var(--accent); }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-sticker);
   padding: 24px;
 }
 
@@ -552,7 +479,7 @@ a { color: var(--accent); }
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--gridline);
+  background: var(--baseline);
 }
 .onboarding-dot.active { background: var(--accent); }
 .onboarding-actions { display: flex; gap: 8px; }
@@ -563,6 +490,103 @@ a { color: var(--accent); }
 .onboarding-skip:hover { color: var(--text-secondary); }
 
 body.onboarding-locked { overflow: hidden; }
+
+.streak-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -6px 0 16px;
+}
+.streak-row .streak-badge { margin: 0; }
+
+.achievements-trigger {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  min-height: 0;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Achievements modal - same convention as .onboarding-overlay: [hidden]
+   toggling, role=dialog, a real focus trap (see achievements.js). */
+.achievements-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 160;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.achievements-overlay:not([hidden]) { display: flex; }
+
+.achievements-dialog {
+  width: min(480px, 100%);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sticker);
+  padding: 24px;
+  overflow: hidden;
+}
+
+.achievements-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+.achievements-header h2 { font-size: var(--fs-h2); margin: 0; }
+.achievements-close {
+  width: 32px;
+  height: 32px;
+  min-height: 0;
+  padding: 0;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.achievements-list {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.achievement-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--page);
+  opacity: 0.55;
+}
+.achievement-item.unlocked {
+  opacity: 1;
+  background: color-mix(in srgb, var(--cat-4) 10%, var(--surface));
+  border-color: color-mix(in srgb, var(--cat-4) 40%, transparent);
+}
+.achievement-stamp {
+  font-size: 1.3rem;
+  color: var(--cat-4);
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 2px;
+}
+.achievement-text { display: flex; flex-direction: column; gap: 2px; }
+.achievement-label { font-weight: 700; font-size: var(--fs-md); }
+.achievement-desc { font-size: var(--fs-sm); color: var(--text-secondary); }
 
 .nav-category { margin-bottom: 14px; }
 
@@ -591,11 +615,6 @@ body.onboarding-locked { overflow: hidden; }
   font-size: var(--fs-md);
   border-left: 2px solid transparent;
 }
-.nav-topic::before {
-  content: "# ";
-  color: var(--muted);
-}
-
 .nav-topic:hover { background: var(--surface-2); }
 .nav-topic.active {
   background: color-mix(in srgb, var(--cat) 16%, transparent);
@@ -603,7 +622,6 @@ body.onboarding-locked { overflow: hidden; }
   border-left-color: var(--cat);
   font-weight: 600;
 }
-.nav-topic.active::before { color: var(--cat); }
 .nav-topic.coming-soon { color: var(--muted); }
 .nav-topic.completed::before { content: "✓ "; color: var(--viz-sorted); }
 
@@ -637,12 +655,13 @@ body.onboarding-locked { overflow: hidden; }
 .category-badge {
   display: inline-block;
   font-size: var(--fs-sm);
-  font-weight: 600;
+  font-weight: 700;
   padding: 3px 9px;
   border-radius: var(--radius);
   background: color-mix(in srgb, var(--cat) 16%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--cat) 40%, transparent);
   color: var(--cat);
+  transform: rotate(-2deg);
 }
 
 .progress-bar-wrap {
@@ -814,6 +833,7 @@ body.onboarding-locked { overflow: hidden; }
   border-radius: var(--radius);
   padding: 28px 32px;
   text-align: center;
+  box-shadow: var(--shadow-sticker);
 }
 
 .guided-meta {
@@ -871,6 +891,7 @@ body.onboarding-locked { overflow: hidden; }
   justify-content: space-between;
   gap: 14px;
   flex-wrap: wrap;
+  box-shadow: var(--shadow-sticker);
 }
 /* [hidden] and .guided-continue are equal specificity - without this,
    author display:flex silently wins the cascade tie over the UA [hidden]
@@ -886,12 +907,30 @@ body.onboarding-locked { overflow: hidden; }
   text-decoration: none;
 }
 
+/* Celebration bursts - see celebrate.js. .celebrate-particle is spawned/
+   removed entirely by JS; .celebrate-flash is the prefers-reduced-motion
+   fallback, a plain class toggle with no transition (an animated fade would
+   defeat the point of a reduced-motion path). */
+.celebrate-particle {
+  position: fixed;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 500;
+}
+.celebrate-flash {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .roadmap-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-top: 2px solid var(--cat);
+  border-top: 3px solid var(--cat);
   border-radius: var(--radius);
   padding: 16px;
+  box-shadow: var(--shadow-sticker);
 }
 
 /* Scroll-reveal starting/end state - see scroll_reveal.js. `.roadmap-card`
@@ -940,7 +979,6 @@ body.onboarding-locked { overflow: hidden; }
   letter-spacing: 0.03em;
   color: var(--cat);
 }
-.eli5-text h2::before { content: "// "; color: var(--muted); }
 .eli5-text p:last-child { margin-bottom: 0; }
 
 .explanation h2 { margin-top: 0; }
@@ -963,7 +1001,7 @@ body.onboarding-locked { overflow: hidden; }
   font-size: var(--fs-md);
 }
 .complexity-table th, .complexity-table td {
-  border: 1px solid var(--gridline);
+  border: 1px solid var(--baseline);
   padding: 6px 10px;
   text-align: left;
 }
@@ -1015,17 +1053,20 @@ input[type="range"] {
 
 button {
   font: inherit;
+  font-weight: 700;
   padding: 8px 14px;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: var(--page);
+  background: var(--surface);
   color: var(--text-primary);
   cursor: pointer;
   min-height: 44px; /* Apple HIG minimum comfortable tap target */
   touch-action: manipulation; /* skip the ~300ms double-tap-zoom delay on iOS Safari */
+  box-shadow: var(--shadow-sticker);
 }
-button:hover { background: var(--gridline); }
-button.btn-primary { background: var(--accent); color: var(--fill-ink); font-weight: 600; border-color: var(--accent); }
+button:hover { background: var(--surface-2); }
+button:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 rgba(30, 43, 38, 0.15); }
+button.btn-primary { background: var(--accent); color: var(--fill-ink); font-weight: 700; border-color: var(--accent); }
 button.btn-primary:hover { background: var(--accent-hover); }
 
 canvas#stage {
@@ -1034,7 +1075,7 @@ canvas#stage {
   aspect-ratio: 9 / 4;
   display: block;
   background: var(--page);
-  border: 1px solid var(--gridline);
+  border: 1px solid var(--baseline);
   border-radius: var(--radius);
 }
 
@@ -1047,7 +1088,7 @@ canvas#stage {
   max-width: 100%;
   padding: 20px 16px;
   background: var(--page);
-  border: 1px solid var(--gridline);
+  border: 1px solid var(--baseline);
   border-radius: var(--radius);
   overflow-x: auto;
 }
@@ -1116,7 +1157,7 @@ canvas#stage {
   max-width: 100%;
   padding: 16px;
   background: var(--page);
-  border: 1px solid var(--gridline);
+  border: 1px solid var(--baseline);
   border-radius: var(--radius);
 }
 
@@ -1128,7 +1169,7 @@ canvas#stage {
   border-radius: var(--radius);
 }
 
-.hash-bucket-row.active { background: var(--gridline); }
+.hash-bucket-row.active { background: var(--baseline); }
 
 .hash-bucket-label {
   width: 34px;
@@ -1156,7 +1197,7 @@ canvas#stage {
   max-width: 100%;
   padding: 12px;
   background: var(--page);
-  border: 1px solid var(--gridline);
+  border: 1px solid var(--baseline);
   border-radius: var(--radius);
   display: flex;
   align-items: center;
@@ -1200,8 +1241,6 @@ canvas#stage {
   color: var(--muted);
   margin-top: 6px;
 }
-.key-hints::before { content: "// "; }
-
 .status-bar {
   display: flex;
   flex-wrap: wrap;
@@ -1256,6 +1295,7 @@ canvas#stage {
   background: color-mix(in srgb, var(--cat) 10%, var(--surface));
   border: 2px solid var(--cat);
   border-radius: var(--radius);
+  box-shadow: var(--shadow-sticker);
   text-align: center;
 }
 
@@ -1293,7 +1333,7 @@ canvas#stage {
   max-width: 100%;
   overflow-x: auto;
   background: var(--page);
-  border: 1px solid var(--gridline);
+  border: 1px solid var(--baseline);
   border-radius: var(--radius);
   padding: 12px;
 }
@@ -1305,7 +1345,7 @@ canvas#stage {
 }
 
 .dp-table th, .dp-table td {
-  border: 1px solid var(--gridline);
+  border: 1px solid var(--baseline);
   padding: 5px 9px;
   text-align: center;
   white-space: nowrap;
@@ -1546,14 +1586,14 @@ canvas#stage {
   width: 16px;
   height: 16px;
   border-radius: 3px;
-  background: var(--gridline);
+  background: var(--baseline);
   animation: motion-fill 3.6s steps(1) infinite;
   animation-delay: calc(var(--d) * 0.35s);
 }
 @keyframes motion-fill {
-  0% { background: var(--gridline); }
+  0% { background: var(--baseline); }
   8%, 92% { background: var(--cat); }
-  100% { background: var(--gridline); }
+  100% { background: var(--baseline); }
 }
 
 /* growth - Big-O: three bars racing as "input size" grows, looping. The
@@ -1680,7 +1720,7 @@ canvas#stage {
     padding-top: max(16px, env(safe-area-inset-top));
     transform: translateX(-100%);
     transition: transform 0.25s ease;
-    box-shadow: 2px 0 24px rgba(0, 0, 0, 0.45);
+    box-shadow: var(--shadow-sticker);
   }
   .sidebar.open { transform: translateX(0); }
 
