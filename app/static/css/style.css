@@ -45,10 +45,11 @@
   /* Sharp corners - cut paper and stickers, not rounded IDE chrome. */
   --radius: 3px;
 
-  /* The signature hard offset shadow - no blur, like a sticker sitting a
-     little proud of the page. Used everywhere a soft box-shadow used to be,
-     instead of one-off shadow values per component. */
-  --shadow-sticker: 3px 3px 0 rgba(30, 43, 38, 0.15);
+  /* The signature shadow - a hard offset (the "sticker" cue: paper sitting
+     a little proud of the page) layered over a soft ambient blur underneath
+     it for real depth, rather than a flat cutout. Used everywhere a shadow
+     is needed, instead of one-off values per component. */
+  --shadow-sticker: 3px 3px 0 rgba(30, 43, 38, 0.16), 0 10px 24px rgba(30, 43, 38, 0.07), 0 2px 6px rgba(30, 43, 38, 0.05);
 
   /* --mono is reserved for real functional monospace now: code blocks,
      tabular numbers, small data labels (step counters, timestamps) - not
@@ -119,10 +120,15 @@ body {
   font-family: var(--sans);
   font-size: var(--fs-body);
   background: var(--page);
+  /* Two faint color blooms behind the grid, one cool one warm, so the page
+     isn't a flat fill - the grid lines paint on top of them. */
   background-image:
+    radial-gradient(circle at 15% 0%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 45%),
+    radial-gradient(circle at 100% 100%, color-mix(in srgb, var(--viz-compare) 6%, transparent), transparent 42%),
     linear-gradient(var(--gridline) 1px, transparent 1px),
     linear-gradient(90deg, var(--gridline) 1px, transparent 1px);
-  background-size: 22px 22px;
+  background-size: auto, auto, 22px 22px, 22px 22px;
+  background-attachment: fixed, fixed, scroll, scroll;
   color: var(--text-primary);
   overflow-x: hidden;
 }
@@ -232,6 +238,7 @@ a { color: var(--accent); }
   font-size: 1.05rem;
   color: var(--cat-4);
   transform: rotate(15deg);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--cat-4) 55%, transparent);
 }
 .streak-badge-n {
   font-family: var(--mono);
@@ -576,6 +583,10 @@ body.onboarding-locked { overflow: hidden; }
   opacity: 1;
   background: color-mix(in srgb, var(--cat-4) 10%, var(--surface));
   border-color: color-mix(in srgb, var(--cat-4) 40%, transparent);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--cat-4) 20%, transparent);
+}
+.achievement-item.unlocked .achievement-stamp {
+  text-shadow: 0 0 10px color-mix(in srgb, var(--cat-4) 60%, transparent);
 }
 .achievement-stamp {
   font-size: 1.3rem;
@@ -715,6 +726,7 @@ body.onboarding-locked { overflow: hidden; }
   background: var(--accent);
   color: var(--fill-ink);
   font-weight: 600;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent), 0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 .view-toggle-btn[aria-pressed="true"]:hover { background: var(--accent-hover); }
 
@@ -765,19 +777,20 @@ body.onboarding-locked { overflow: hidden; }
   height: 30px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: var(--cat);
+  background: linear-gradient(155deg, color-mix(in srgb, var(--cat) 65%, white), var(--cat));
   color: var(--fill-ink);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.9rem;
   border: 2px solid var(--page);
-  box-shadow: 0 0 0 2px var(--cat);
-  transition: transform 0.15s ease;
+  box-shadow: 0 0 0 2px var(--cat), 0 4px 12px color-mix(in srgb, var(--cat) 40%, transparent);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
 }
 .timeline-node:hover .timeline-node-dot,
 .timeline-node:focus-visible .timeline-node-dot {
-  transform: scale(1.12);
+  transform: scale(1.16);
+  box-shadow: 0 0 0 2px var(--cat), 0 6px 18px color-mix(in srgb, var(--cat) 55%, transparent);
 }
 
 .timeline-node-label {
@@ -1012,8 +1025,17 @@ body.onboarding-locked { overflow: hidden; }
   padding: 20px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-top: 2px solid var(--cat);
+  border-top: 3px solid var(--cat);
   border-radius: var(--radius);
+  box-shadow: var(--shadow-sticker);
+  animation: card-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .visualizer { animation: none; }
+}
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .visualizer-header {
@@ -1063,20 +1085,37 @@ button {
   min-height: 44px; /* Apple HIG minimum comfortable tap target */
   touch-action: manipulation; /* skip the ~300ms double-tap-zoom delay on iOS Safari */
   box-shadow: var(--shadow-sticker);
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease, background 0.15s ease;
 }
-button:hover { background: var(--surface-2); }
-button:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 rgba(30, 43, 38, 0.15); }
-button.btn-primary { background: var(--accent); color: var(--fill-ink); font-weight: 700; border-color: var(--accent); }
+button:hover { background: var(--surface-2); transform: translateY(-2px); }
+button:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 rgba(30, 43, 38, 0.16);
+  transition-duration: 0.05s;
+}
+button.btn-primary {
+  background: var(--accent);
+  color: var(--fill-ink);
+  font-weight: 700;
+  border-color: var(--accent);
+  box-shadow: 3px 3px 0 rgba(30, 43, 38, 0.16), 0 10px 22px color-mix(in srgb, var(--accent) 40%, transparent);
+}
 button.btn-primary:hover { background: var(--accent-hover); }
+button.btn-primary:active {
+  box-shadow: 1px 1px 0 rgba(30, 43, 38, 0.16), 0 4px 10px color-mix(in srgb, var(--accent) 30%, transparent);
+}
 
 canvas#stage {
   width: 100%;
   max-width: 100%;
   aspect-ratio: 9 / 4;
   display: block;
-  background: var(--page);
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--accent) 4%, transparent), transparent 60%),
+    var(--page);
   border: 1px solid var(--baseline);
   border-radius: var(--radius);
+  box-shadow: inset 0 2px 6px rgba(30, 43, 38, 0.05);
 }
 
 .list-stage {
@@ -1279,7 +1318,11 @@ canvas#stage {
   font-weight: 600;
 }
 .predict-toggle:hover { background: color-mix(in srgb, var(--cat) 12%, var(--page)); }
-.predict-toggle.active { background: var(--cat); color: var(--fill-ink); }
+.predict-toggle.active {
+  background: var(--cat);
+  color: var(--fill-ink);
+  box-shadow: 3px 3px 0 rgba(30, 43, 38, 0.16), 0 8px 20px color-mix(in srgb, var(--cat) 40%, transparent);
+}
 
 .predict-score {
   font-size: var(--fs-md);
@@ -1295,8 +1338,16 @@ canvas#stage {
   background: color-mix(in srgb, var(--cat) 10%, var(--surface));
   border: 2px solid var(--cat);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-sticker);
+  box-shadow: 3px 3px 0 rgba(30, 43, 38, 0.16), 0 14px 32px color-mix(in srgb, var(--cat) 18%, transparent);
   text-align: center;
+  animation: predict-panel-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .predict-panel { animation: none; }
+}
+@keyframes predict-panel-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .predict-question {
@@ -1320,8 +1371,29 @@ canvas#stage {
 }
 .predict-option:hover:not(:disabled) { background: color-mix(in srgb, var(--cat) 16%, var(--page)); }
 .predict-option:disabled { opacity: 0.7; cursor: default; }
-.predict-option.predict-correct { background: var(--viz-sorted); color: var(--fill-ink); border-color: var(--viz-sorted); opacity: 1; }
-.predict-option.predict-wrong { background: var(--viz-swap); color: var(--fill-ink); border-color: var(--viz-swap); opacity: 1; }
+.predict-option.predict-correct {
+  background: var(--viz-sorted);
+  color: var(--fill-ink);
+  border-color: var(--viz-sorted);
+  opacity: 1;
+  box-shadow: 2px 2px 0 rgba(30, 43, 38, 0.16), 0 8px 20px color-mix(in srgb, var(--viz-sorted) 45%, transparent);
+  animation: option-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.predict-option.predict-wrong {
+  background: var(--viz-swap);
+  color: var(--fill-ink);
+  border-color: var(--viz-swap);
+  opacity: 1;
+  box-shadow: 2px 2px 0 rgba(30, 43, 38, 0.16), 0 8px 20px color-mix(in srgb, var(--viz-swap) 35%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .predict-option.predict-correct { animation: none; }
+}
+@keyframes option-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
 
 .predict-feedback {
   margin: 12px 0 0;
