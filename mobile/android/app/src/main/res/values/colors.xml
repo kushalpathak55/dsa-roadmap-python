@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches the web app's dark graph-map palette (app/static/css/style.css).
+         colorPrimary/colorAccent are the c-n brand blue token, colorPrimaryDark
+         (tints the status bar / task-switcher) is the bg-0 token. Referenced by
+         styles.xml's AppTheme; without this file the Android build fails to
+         resolve those @color/ references. -->
+    <color name="colorPrimary">#5B8CFF</color>
+    <color name="colorPrimaryDark">#080B13</color>
+    <color name="colorAccent">#5B8CFF</color>
+</resources>
